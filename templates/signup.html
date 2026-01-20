@@ -22,7 +22,7 @@
     {% endwith %}
 
 
-    <form method="POST" class="row g-3">
+    <form method="POST" action="{{ url_for('signup') }}">
 
         <!-- ================= STEP 1 ================= -->
         <div id="step1">
@@ -81,14 +81,16 @@
                 <!-- Doctor code -->
                 <div class="col-md-6 d-none" id="doctorCodeWrapper">
                     <label class="form-label">Doctor Signup Code</label>
-                    <input name="doctor_code" type="password" class="form-control">
+                    <input name="doctor_code">
                     <small class="text-muted">
                         Required for doctor registration only.
                     </small>
-                    <button type="submit"
-                        class="btn btn-success w-50">
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary mt-4">
                         Submit
                     </button>
+
                 </div>
 
             </div>
