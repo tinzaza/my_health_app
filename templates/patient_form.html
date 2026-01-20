@@ -227,7 +227,7 @@
                                     aria-controls="collapse{{ loop.index }}"
                                 >
                                     <span class="me-2">Date:</span>
-                                    <span class="fw-semibold">{{ r.created_at[:10] }}</span>
+                                    <span class="fw-semibold">{{ r.created_at.strftime('%Y-%m-%d') }}</span>
                                 </button>
                                 </h2>
 
