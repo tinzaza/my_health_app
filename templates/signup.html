@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="p-4 bg-light">
+<div class="container col-md-8">
+    <h2 class="text-center mb-4">Create Account</h2>
+
+        <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} text-center">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+
+    <form method="POST" class="row g-3">
+
+        <!-- ================= STEP 1 ================= -->
+        <div id="step1">
+
+            <!-- INTRO -->
+            <div class="mb-4 text-center">
+                <h4 class="mb-1">Patient Registration</h4>
+                <p class="text-muted">
+                    Please enter your basic information below.  
+                    This information will be used for clinical assessment and follow-up.
+                </p>
+            </div>
+
+            <!-- ================= ACCOUNT INFORMATION ================= -->
+            <h6 class="fw-semibold mb-3">Account Information</h6>
+
+            <div class="row g-3">
+
+                
+
+                <div class="col-md-6">
+                    <label>Username <span class="required-star">*</span></label>
+                    <input name="username" class="form-control" required>
+                    <small class="text-muted">
+                        Used to log in to the system.
+                    </small>
+                </div>
+
+                <div class="col-md-6">
+                    <label>Password <span class="required-star">*</span></label>
+                    <input name="password" type="password" class="form-control" required>
+                    <small class="text-muted">
+                        Choose a secure password.
+                    </small>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">
+                        Full name (ชื่อ นามสกุล) <span class="required">*</span>
+                    </label>
+                    <input name="full_name" class="form-control" required>
+                    <small class="text-muted">
+                        This name will be visible to healthcare providers.
+                    </small>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Role <span class="required-star">*</span></label>
+                    <select name="role" id="roleSelect" class="form-select" required>
+                        <option value="" disabled selected>Select Role</option>
+                        <option value="patient">Patient</option>
+                        <option value="doctor">Doctor</option>
+                    </select>
+                </div>
+
+                <!-- Doctor code -->
+                <div class="col-md-6 d-none" id="doctorCodeWrapper">
+                    <label class="form-label">Doctor Signup Code</label>
+                    <input name="doctor_code" type="password" class="form-control">
+                    <small class="text-muted">
+                        Required for doctor registration only.
+                    </small>
+                    <button type="submit"
+                        class="btn btn-success w-50">
+                        Submit
+                    </button>
+                </div>
+
+            </div>
+
+            <hr class="my-4">
+
+            <!-- ================= PATIENT INFORMATION ================= -->
+            <h6 class="fw-semibold mb-3 patient-field">Patient Information</h6>
+
+            <div class="row g-3 patient-field">
+
+                <div class="col-md-6">
+                    <label>Email <span class="required-star">*</span></label>
+                    <input name="email" type="email" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label>Phone Number <span class="required-star">*</span></label>
+                    <input name="phone" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label>Address</label>
+                    <input name="address" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label>Date of Birth <span class="required-star">*</span></label>
+                    <input name="dob" type="date" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label>Gender <span class="required-star">*</span></label>
+                    <select name="gender" class="form-select">
+                        <option value="">-</option>
+                        <option>Male</option>
+                        <option>Female</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label>Emergency Contact</label>
+                    <input name="emergency_contact" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label>Insurance Provider</label>
+                    <input name="insurance_provider" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label>Hospital Number <span class="required-star">*</span></label>
+                    <input name="hospital_number" class="form-control">
+                </div>
+            
+                <br>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="consent" name="consent" required>
+                    <label class="form-check-label" for="consent">
+                        กรุณา ระบุการให้ความยินยอมในการเก็บข้อมูล
+                        <br>
+                        * ข้าพเจ้ายินยอมให้โครงการศึกษานี้เก็บและใช้ข้อมูลส่วนบุคคลของข้าพเจ้า รวมถึงเลขประจำตัวผู้ป่วยนอก (HN) เพื่อใช้ในการคัดเลือกและติดตามผลของโครงการ ข้อมูลทั้งหมดจะถูกเก็บรักษาเป็นความลับ และใช้เพื่อวัตถุประสงค์ทางการวิจัยเท่านั้น โดยจะไม่มีการเปิดเผยต่อบุคคลภายนอกที่ไม่ได้รับอนุญาต
+                    </label>
+                </div>
+                    <small class="text-muted">You must provide consent to continue.</small>
+            
+
+            </div>
+
+            <!-- NEXT BUTTON -->
+            <div class="col-12 mt-4 patient-field">
+                <button
+                    type="button"
+                    class="btn btn-primary w-100"
+                    onclick="goStep2()"
+                >
+                    Continue to Symptom & Environment Assessment →
+                </button>
+            </div>
+
+            <!-- LOGIN LINK -->
+            <div class="text-center mt-3">
+                <a href="{{ url_for('login') }}" class="text-decoration-none">
+                    Already have an account? <strong>Log in</strong>
+                </a>
+            </div>
+
+
+        </div>
+
+        <!-- ================= STEP 2 ================= -->
+<div id="step2" class="d-none">
+
+    <!-- ================= MEDICAL HISTORY ================= -->
+
+<!-- ================= 1. ลักษณะอาการของโรค ================= -->
+
+<h4 class="mt-4 mb-3">1. ลักษณะอาการของโรค</h4>
+
+<label class="form-label fw-semibold">ลักษณะอาการตลอดปี</label>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="symptom_year_pattern" value="all_year">
+  <label class="form-check-label">มีอาการตลอดทั้งปี</label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="symptom_year_pattern" value="seasonal">
+  <label class="form-check-label">เป็นเฉพาะบางฤดู</label>
+</div>
+<div class="form-check mb-3">
+  <input class="form-check-input" type="radio" name="symptom_year_pattern" value="all_year_worse_season">
+  <label class="form-check-label">มีอาการทั้งปี แต่กำเริบมากในบางฤดู</label>
+</div>
+
+<label class="form-label fw-semibold">ช่วงเวลาของปีที่อาการกำเริบ</label>
+<div class="row">
+  <div class="col-md-6">
+    <div class="form-check"><input type="checkbox" name="season_summer"> ฤดูร้อน</div>
+    <div class="form-check"><input type="checkbox" name="season_rainy"> ฤดูฝน</div>
+    <div class="form-check"><input type="checkbox" name="season_winter"> ฤดูหนาว</div>
+  </div>
+  <div class="col-md-6">
+    <div class="form-check"><input type="checkbox" name="season_summer_rainy"> ฤดูร้อนต่อฤดูฝน</div>
+    <div class="form-check"><input type="checkbox" name="season_rainy_winter"> ฤดูฝนต่อฤดูหนาว</div>
+    <div class="form-check"><input type="checkbox" name="season_uncertain"> ไม่แน่นอน</div>
+  </div>
+</div>
+
+<hr>
+
+<label class="form-label fw-semibold">ระยะเวลาที่มีอาการในแต่ละปี</label>
+<select class="form-select mb-3" name="duration_per_year">
+  <option value="">-- กรุณาเลือก --</option>
+  <option value="<1">ไม่ถึง 1 เดือน ต่อปี</option>
+  <option value="1-4">1–4 เดือน ต่อปี</option>
+  <option value=">4">ตั้งแต่ 4 เดือน ต่อปี ขึ้นไป</option>
+</select>
+
+<label class="form-label fw-semibold">ความถี่ของอาการต่อสัปดาห์</label>
+<select class="form-select mb-3" name="weekly_frequency">
+  <option value="">-- กรุณาเลือก --</option>
+  <option value="<3">ไม่เกิน 3 วัน ต่อสัปดาห์</option>
+  <option value=">=4">ตั้งแต่ 4 วัน ต่อสัปดาห์ขึ้นไป</option>
+</select>
+
+<label class="form-label fw-semibold">ช่วงเวลาของวันที่อาการกำเริบ</label>
+<div class="row">
+  <div class="col-md-4"><div class="form-check"><input type="checkbox" name="time_6_12"> 6–12 น.</div></div>
+  <div class="col-md-4"><div class="form-check"><input type="checkbox" name="time_12_18"> 12–18 น.</div></div>
+  <div class="col-md-4"><div class="form-check"><input type="checkbox" name="time_18_24"> 18–24 น.</div></div>
+  <div class="col-md-4"><div class="form-check"><input type="checkbox" name="time_24_6"> 24–6 น.</div></div>
+  <div class="col-md-4"><div class="form-check"><input type="checkbox" name="time_all_day"> มีอาการทั้งวัน</div></div>
+  <div class="col-md-4"><div class="form-check"><input type="checkbox" name="time_uncertain"> ไม่แน่นอน</div></div>
+</div>
+
+<hr>
+
+<!-- ================= 2. ที่อยู่อาศัยและสิ่งแวดล้อม ================= -->
+
+<h4 class="mt-4 mb-3">2. ที่อยู่อาศัยและสิ่งแวดล้อม</h4>
+
+<label class="form-label fw-semibold">ลักษณะพื้นที่อยู่อาศัย</label>
+<select class="form-select mb-3" name="living_area">
+  <option value="">-- กรุณาเลือก --</option>
+  <option value="urban">ในเมือง</option>
+  <option value="suburban">ชานเมือง</option>
+  <option value="rural">นอกเมือง / ชนบท</option>
+</select>
+
+<label class="form-label fw-semibold">ที่อยู่อาศัยติดถนนใหญ่หรือไม่</label>
+<select class="form-select mb-3" name="near_road">
+  <option value="no">ไม่ติดถนนใหญ่</option>
+  <option value="yes">ติดถนนใหญ่</option>
+</select>
+
+<label class="form-label fw-semibold">ชนิดของที่อยู่อาศัย</label>
+<select class="form-select mb-3" name="housing_type">
+  <option value="">-- กรุณาเลือก --</option>
+  <option value="house">บ้านเดี่ยว</option>
+  <option value="townhouse">บ้านแฝด / ทาวน์เฮาส์</option>
+  <option value="commercial">อาคารพาณิชย์</option>
+  <option value="condo">คอนโดมิเนียม</option>
+</select>
+
+<label class="form-label fw-semibold">มีเครื่องปรับอากาศในห้องนอนหรือไม่</label>
+<select class="form-select mb-3" name="air_conditioner">
+  <option value="no">ไม่มี</option>
+  <option value="yes">มี</option>
+</select>
+
+<label class="form-label fw-semibold">สัตว์เลี้ยง</label>
+<div class="form-check"><input type="checkbox" name="pet_cat"> แมว</div>
+<div class="form-check"><input type="checkbox" name="pet_dog"> สุนัข</div>
+<div class="form-check"><input type="checkbox" name="pet_bird"> นก</div>
+<input class="form-control mt-2" name="pet_other" placeholder="สัตว์เลี้ยงอื่น ๆ">
+
+<hr>
+
+<!-- ================= 3. สิ่งกระตุ้นอาการ ================= -->
+
+<h4 class="mt-4 mb-3">3. สิ่งกระตุ้นอาการ</h4>
+
+<label class="form-label fw-semibold">สารก่อภูมิแพ้</label>
+<div class="form-check"><input type="checkbox" name="trigger_dust"> ฝุ่นบ้าน</div>
+<div class="form-check"><input type="checkbox" name="trigger_pollen"> ละอองเกสร</div>
+<div class="form-check"><input type="checkbox" name="trigger_animal"> ขนสัตว์</div>
+
+<hr>
+
+<label class="form-label fw-semibold">สิ่งกระตุ้นอื่น ๆ</label>
+<div class="form-check"><input type="checkbox" name="trigger_smoke"> ควันบุหรี่</div>
+<div class="form-check"><input type="checkbox" name="trigger_cold_air"> อากาศเย็น</div>
+<div class="form-check"><input type="checkbox" name="trigger_pollution"> มลภาวะ / ฝุ่นควันรถ</div>
+<div class="form-check"><input type="checkbox" name="trigger_stress"> อารมณ์เปลี่ยนแปลง</div>
+<input class="form-control mt-2" name="trigger_other" placeholder="สิ่งกระตุ้นอื่น ๆ">
+
+<hr>
+
+<label class="form-label fw-semibold">ช่วงเวลาของปีที่อาการกำเริบ</label>
+<div class="row">
+  <div class="col-md-6">
+    <div class="form-check"><input type="checkbox" name="season_summer"> ฤดูร้อน</div>
+    <div class="form-check"><input type="checkbox" name="season_rainy"> ฤดูฝน</div>
+    <div class="form-check"><input type="checkbox" name="season_winter"> ฤดูหนาว</div>
+  </div>
+  <hr>
+
+<!-- ================= 4. ประวัติการสูบบุหรี่ ================= -->
+
+<h4 class="mt-4 mb-3">4. ประวัติการสูบบุหรี่</h4>
+
+<label class="form-label fw-semibold">การสูบบุหรี่</label>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="smoking_status" value="no">
+  <label class="form-check-label">ไม่สูบ</label>
+</div>
+
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="smoking_status" value="current">
+  <label class="form-check-label">สูบ</label>
+</div>
+
+<input type="number"
+       name="cigarettes_per_day"
+       class="form-control ms-4"
+       style="width:120px"
+       placeholder="ซอง/วัน">
+
+
+<div class="form-check mb-3">
+  <input class="form-check-input" type="radio" name="smoking_status" value="ex">
+  <label class="form-check-label">
+    เคยสูบ แต่หยุดมาแล้ว
+    <input type="number" name="quit_years" class="form-control d-inline-block ms-2"
+           style="width:80px;"> ปี
+  </label>
+</div>
+
+<label class="form-label fw-semibold">มีผู้สูบบุหรี่ในบ้านเดียวกันหรือไม่</label>
+<select class="form-select mb-3" name="secondhand_smoke">
+  <option value="">-- กรุณาเลือก --</option>
+  <option value="no">ไม่มี</option>
+  <option value="yes">มี</option>
+</select>
+
+<hr>
+
+<!-- ================= 5. ประวัติการแพ้ ================= -->
+
+<h4 class="mt-4 mb-3">5. ประวัติการแพ้</h4>
+
+<label class="form-label fw-semibold">ประวัติการแพ้ยา / วัคซีน</label>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="drug_allergy" value="no">
+  <label class="form-check-label">ไม่แพ้</label>
+</div>
+<div class="form-check mb-2">
+  <input class="form-check-input" type="radio" name="drug_allergy" value="yes">
+  <label class="form-check-label">แพ้</label>
+</div>
+
+<input class="form-control mb-2" name="drug_allergy_name"
+       placeholder="แพ้ยา / วัคซีน หรือสารที่แพ้">
+<input class="form-control mb-3" name="drug_allergy_symptom"
+       placeholder="อาการแพ้ที่เกิดขึ้น">
+
+<label class="form-label fw-semibold">ประวัติการแพ้อาหาร</label>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="food_allergy" value="no">
+  <label class="form-check-label">ไม่แพ้</label>
+</div>
+<div class="form-check mb-2">
+  <input class="form-check-input" type="radio" name="food_allergy" value="yes">
+  <label class="form-check-label">แพ้</label>
+</div>
+
+<input class="form-control mb-2" name="food_allergy_name"
+       placeholder="แพ้อาหาร ได้แก่">
+<input class="form-control mb-3" name="food_allergy_symptom"
+       placeholder="อาการแพ้ที่เกิดขึ้น">
+
+<label class="form-label fw-semibold">ประวัติการแพ้สารก่อภูมิแพ้จากธรรมชาติ</label>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="natural_allergy" value="no">
+  <label class="form-check-label">ไม่แพ้</label>
+</div>
+<div class="form-check mb-2">
+  <input class="form-check-input" type="radio" name="natural_allergy" value="yes">
+  <label class="form-check-label">แพ้</label>
+</div>
+
+<input class="form-control mb-3" name="natural_allergy_symptom"
+       placeholder="อาการที่แพ้">
+
+<hr>
+
+<!-- ================= 6. ประวัติครอบครัว ================= -->
+
+<h4 class="mt-4 mb-3">6. ประวัติครอบครัว</h4>
+
+<p class="text-muted">
+มีบุคคลในครอบครัวเป็นโรคต่อไปนี้หรือไม่  
+(เลือกได้มากกว่า 1 ข้อ)
+</p>
+
+<label class="form-label fw-semibold">โรคหืด (Asthma)</label>
+<div class="row">
+  <div class="col-md-6">
+    <div class="form-check"><input type="checkbox" name="family_asthma_father"> พ่อ</div>
+    <div class="form-check"><input type="checkbox" name="family_asthma_mother"> แม่</div>
+    <div class="form-check"><input type="checkbox" name="family_asthma_sibling"> พี่น้อง</div>
+    <div class="form-check"><input type="checkbox" name="family_asthma_child"> ลูก</div>
+    <div class="form-check"><input type="checkbox" name="family_asthma_relative"> ญาติอื่น</div>
+  </div>
+</div>
+
+<label class="form-label fw-semibold">โรคภูมิแพ้จมูกอักเสบ</label>
+<div class="row">
+  <div class="col-md-6">
+    <div class="form-check"><input type="checkbox" name="family_rhinitis_father"> พ่อ</div>
+    <div class="form-check"><input type="checkbox" name="family_rhinitis_mother"> แม่</div>
+    <div class="form-check"><input type="checkbox" name="family_rhinitis_sibling"> พี่น้อง</div>
+    <div class="form-check"><input type="checkbox" name="family_rhinitis_child"> ลูก</div>
+    <div class="form-check"><input type="checkbox" name="family_rhinitis_relative"> ญาติอื่น</div>
+  </div>
+</div>
+
+<label class="form-label fw-semibold">เยื่อบุตาอักเสบจากภูมิแพ้</label>
+<div class="row">
+  <div class="col-md-6">
+    <div class="form-check"><input type="checkbox" name="family_allergic_conjunctivitis_father"> พ่อ</div>
+    <div class="form-check"><input type="checkbox" name="family_allergic_conjunctivitis_mother"> แม่</div>
+    <div class="form-check"><input type="checkbox" name="family_allergic_conjunctivitis_sibling"> พี่น้อง</div>
+    <div class="form-check"><input type="checkbox" name="family_allergic_conjunctivitis_child"> ลูก</div>
+    <div class="form-check"><input type="checkbox" name="family_allergic_conjunctivitis_relative"> ญาติอื่น</div>
+  </div>
+</div>
+
+<label class="form-label fw-semibold">โรคผิวหนังอักเสบแบบ Atopic</label>
+<div class="row">
+  <div class="col-md-6">
+    <div class="form-check"><input type="checkbox" name="family_atopic_dermatitis_father"> พ่อ</div>
+    <div class="form-check"><input type="checkbox" name="family_atopic_dermatitis_mother"> แม่</div>
+    <div class="form-check"><input type="checkbox" name="family_atopic_dermatitis_sibling"> พี่น้อง</div>
+    <div class="form-check"><input type="checkbox" name="family_atopic_dermatitis_child"> ลูก</div>
+    <div class="form-check"><input type="checkbox" name="family_atopic_dermatitis_relative"> ญาติอื่น</div>
+  </div>
+</div>
+<hr>
+
+
+<h4 class="mt-4 mb-3">7. แบบคัดกรองความเสี่ยงทางสุขภาพของท่าน</h4>
+<!-- ================= 1 ================= -->
+<label class="form-label fw-semibold">
+โดยทั่วไป ท่านสามารถปฏิบัติงานตามหน้าที่ได้อย่างไร
+</label>
+
+<div class="form-check"><input type="radio" class="form-check-input" name="work_performance" value="excellent"><label class="form-check-label">ดีเยี่ยม</label></div>
+<div class="form-check"><input type="radio" class="form-check-input" name="work_performance" value="very_good"><label class="form-check-label">ดีมาก</label></div>
+<div class="form-check"><input type="radio" class="form-check-input" name="work_performance" value="good"><label class="form-check-label">ดี</label></div>
+<div class="form-check"><input type="radio" class="form-check-input" name="work_performance" value="fair"><label class="form-check-label">ปานกลาง</label></div>
+<div class="form-check mb-3"><input type="radio" class="form-check-input" name="work_performance" value="poor"><label class="form-check-label">ไม่ดี</label></div>
+
+<!-- ================= 2 ================= -->
+<label class="form-label fw-semibold">
+กิจกรรมที่ต้องใช้กำลัง เช่น ยกของ ทำความสะอาด หรือเดิน
+ความลำบากหรือความเจ็บปวดเป็นอุปสรรคหรือไม่
+</label>
+
+<div class="form-check"><input type="radio" class="form-check-input" name="physical_activity_problem" value="major"><label class="form-check-label">ใช่ เป็นปัญหาอย่างมาก</label></div>
+<div class="form-check"><input type="radio" class="form-check-input" name="physical_activity_problem" value="minor"><label class="form-check-label">ใช่ เป็นปัญหาเล็กน้อย</label></div>
+<div class="form-check mb-3"><input type="radio" class="form-check-input" name="physical_activity_problem" value="none"><label class="form-check-label">ไม่เป็นปัญหา</label></div>
+
+<!-- ================= 3 ================= -->
+<label class="form-label fw-semibold">
+การเดินขึ้นลง 2–3 ชั้น หรือเดินบนพื้นที่ขรุขระ
+</label>
+
+<div class="form-check"><input type="radio" class="form-check-input" name="stairs_problem" value="major"><label class="form-check-label">เป็นปัญหาอย่างมาก</label></div>
+<div class="form-check"><input type="radio" class="form-check-input" name="stairs_problem" value="minor"><label class="form-check-label">เป็นปัญหาเล็กน้อย</label></div>
+<div class="form-check mb-3"><input type="radio" class="form-check-input" name="stairs_problem" value="none"><label class="form-check-label">ไม่เป็นปัญหา</label></div>
+
+<hr>
+
+<p class="fw-semibold">
+ในช่วง 1 เดือนที่ผ่านมา ท่านมีปัญหาด้านงานหรือกิจวัตรประจำวัน เนื่องจากสุขภาพหรือไม่
+</p>
+
+<!-- ================= 4 ================= -->
+<label class="form-label fw-semibold">
+ทำงานได้ปริมาณน้อยกว่าที่ต้องการ
+</label>
+
+{% for opt in ["ตลอดเวลา","เกือบตลอดเวลา","บางครั้ง","นาน ๆ ครั้ง","ไม่เลย"] %}
+<div class="form-check">
+  <input type="radio" class="form-check-input" name="work_less_physical" value="{{ opt }}">
+  <label class="form-check-label">{{ opt }}</label>
+</div>
+{% endfor %}
+
+<br>
+
+<!-- ================= 5 ================= -->
+<label class="form-label fw-semibold">
+ไม่สามารถทำงานได้ตามเวลาที่ตั้งใจ ต้องทำงานอย่างระมัดระวัง
+</label>
+
+{% for opt in ["ตลอดเวลา","เกือบตลอดเวลา","บางครั้ง","นาน ๆ ครั้ง","ไม่เลย"] %}
+<div class="form-check">
+  <input type="radio" class="form-check-input" name="work_careful_physical" value="{{ opt }}">
+  <label class="form-check-label">{{ opt }}</label>
+</div>
+{% endfor %}
+
+<hr>
+
+<p class="fw-semibold">
+ในช่วง 1 เดือนที่ผ่านมา ปัญหาทางอารมณ์ (เช่น ซึมเศร้า วิตกกังวล) มีผลต่อการทำงานหรือไม่
+</p>
+
+<!-- ================= 6 ================= -->
+<label class="form-label fw-semibold">
+ทำงานได้ปริมาณน้อยกว่าที่ต้องการ
+</label>
+
+{% for opt in ["ตลอดเวลา","เกือบตลอดเวลา","บางครั้ง","นาน ๆ ครั้ง","ไม่เลย"] %}
+<div class="form-check">
+  <input type="radio" class="form-check-input" name="work_less_emotional" value="{{ opt }}">
+  <label class="form-check-label">{{ opt }}</label>
+</div>
+{% endfor %}
+
+<br>
+
+<!-- ================= 7 ================= -->
+<label class="form-label fw-semibold">
+ทำงานหรือกิจกรรมโดยขาดความระมัดระวัง / สับเพร่า
+</label>
+
+{% for opt in ["ตลอดเวลา","เกือบตลอดเวลา","บางครั้ง","นาน ๆ ครั้ง","ไม่เลย"] %}
+<div class="form-check">
+  <input type="radio" class="form-check-input" name="work_careless_emotional" value="{{ opt }}">
+  <label class="form-check-label">{{ opt }}</label>
+</div>
+{% endfor %}
+
+<hr>
+
+<!-- ================= 8 ================= -->
+<label class="form-label fw-semibold">
+ปัญหาทางร่างกายทำให้ไม่สามารถทำกิจกรรมประจำวันได้มากน้อยเพียงใด
+</label>
+
+{% for opt in ["ไม่เลย","เล็กน้อย","ปานกลาง","ค่อนข้างมาก","มากที่สุด"] %}
+<div class="form-check">
+  <input type="radio" class="form-check-input" name="daily_activity_limit" value="{{ opt }}">
+  <label class="form-check-label">{{ opt }}</label>
+</div>
+{% endfor %}
+
+<hr>
+
+<p class="fw-semibold">
+ในช่วง 1 เดือนที่ผ่านมา ท่านมีความรู้สึกต่อไปนี้บ่อยเพียงใด
+</p>
+
+<!-- ================= 9–12 ================= -->
+<label class="form-label fw-semibold">9. ท่านรู้สึกสงบ สดชื่น มีสมาธิ</label>
+<div class="form-check"><input type="radio" name="feel_calm" value="ตลอดเวลา"> ตลอดเวลา</div>
+<div class="form-check"><input type="radio" name="feel_calm" value="เกือบตลอดเวลา"> เกือบตลอดเวลา</div>
+<div class="form-check"><input type="radio" name="feel_calm" value="บางครั้ง"> บางครั้ง</div>
+<div class="form-check"><input type="radio" name="feel_calm" value="นาน ๆ ครั้ง"> นาน ๆ ครั้ง</div>
+<div class="form-check mb-3"><input type="radio" name="feel_calm" value="ไม่เลย"> ไม่เลย</div>
+
+<label class="form-label fw-semibold">10. ท่านรู้สึกแข็งแรง กระฉับกระเฉง</label>
+<div class="form-check"><input type="radio" name="feel_energetic" value="ตลอดเวลา"> ตลอดเวลา</div>
+<div class="form-check"><input type="radio" name="feel_energetic" value="เกือบตลอดเวลา"> เกือบตลอดเวลา</div>
+<div class="form-check"><input type="radio" name="feel_energetic" value="บางครั้ง"> บางครั้ง</div>
+<div class="form-check"><input type="radio" name="feel_energetic" value="นาน ๆ ครั้ง"> นาน ๆ ครั้ง</div>
+<div class="form-check mb-3"><input type="radio" name="feel_energetic" value="ไม่เลย"> ไม่เลย</div>
+
+<label class="form-label fw-semibold">11. ท่านรู้สึกเศร้า หมอง</label>
+<div class="form-check"><input type="radio" name="feel_sad" value="ตลอดเวลา"> ตลอดเวลา</div>
+<div class="form-check"><input type="radio" name="feel_sad" value="เกือบตลอดเวลา"> เกือบตลอดเวลา</div>
+<div class="form-check"><input type="radio" name="feel_sad" value="บางครั้ง"> บางครั้ง</div>
+<div class="form-check"><input type="radio" name="feel_sad" value="นาน ๆ ครั้ง"> นาน ๆ ครั้ง</div>
+<div class="form-check mb-3"><input type="radio" name="feel_sad" value="ไม่เลย"> ไม่เลย</div>
+
+<label class="form-label fw-semibold">12. ในระหว่าง 1 เดือนที่ผ่านมา ปัญหาทางอารมณ์ เป็นอุปสรรคต่อการทำกิจกรรมทางสังคมของท่าน เช่น การไปเยี่ยมเพื่อน หรือญาติ มากน้อยเพียงใด</label>
+<div class="form-check"><input type="radio" name="social_limit" value="ตลอดเวลา"> ตลอดเวลา</div>
+<div class="form-check"><input type="radio" name="social_limit" value="เกือบตลอดเวลา"> เกือบตลอดเวลา</div>
+<div class="form-check"><input type="radio" name="social_limit" value="บางครั้ง"> บางครั้ง</div>
+<div class="form-check"><input type="radio" name="social_limit" value="นาน ๆ ครั้ง"> นาน ๆ ครั้ง</div>
+<div class="form-check mb-3"><input type="radio" name="social_limit" value="ไม่เลย"> ไม่เลย</div>
+
+
+
+
+
+    <div class="d-flex gap-2 mt-4">
+        <button type="button"
+                class="btn btn-outline-secondary w-50"
+                onclick="goStep1()">← Back</button>
+        <button type="submit"
+                class="btn btn-success w-50">
+            Submit
+        </button>
+    </div>
+</div>
+
+<script>
+function refreshRoleFields() {
+    const role = document.getElementById("roleSelect").value;
+    const doctor = document.getElementById("doctorCodeWrapper");
+    const patient = document.querySelectorAll(".patient-field");
+
+    if (role === "doctor") {
+        doctor.classList.remove("d-none");
+        patient.forEach(f => f.classList.add("d-none"));
+    } else {
+        doctor.classList.add("d-none");
+        patient.forEach(f => f.classList.remove("d-none"));
+    }
+}
+
+function goStep2() {
+    document.getElementById("step1").classList.add("d-none");
+    document.getElementById("step2").classList.remove("d-none");
+}
+
+function goStep1() {
+    document.getElementById("step2").classList.add("d-none");
+    document.getElementById("step1").classList.remove("d-none");
+}
+
+document.getElementById("roleSelect").addEventListener("change", refreshRoleFields);
+refreshRoleFields();
+</script>
+
+
+</body>
+</html>

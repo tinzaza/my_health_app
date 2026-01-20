@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Symptom Assessment & Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    /* Global font */
+    body {
+        font-family: "Inter", "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
+    }
+
+    /* Section title */
+    .history-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+
+    /* Accordion header (date row) */
+    .accordion-button {
+        font-weight: 500;
+        font-size: 0.95rem;
+        background-color: #f8fafc;
+        color: #0f172a;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background-color: #eef2ff;
+        color: #1d4ed8;
+    }
+
+    .recommendation-box {
+        background: #f9fafb;
+        border-left: 2px solid #0d6efd;
+        padding: 20px 20px;
+        border-radius: 2px;
+        font-family: "Poppins", system-ui, -apple-system, sans-serif;
+        font-size: 0.95rem;
+        line-height: 1.75;
+        color: #111827;
+        white-space: pre-wrap;   /* keep line breaks */
+    }
+    </style>
+</head>
+<body class="p-4">
+<div class="container col-lg-10">
+    <h2 class="text-center mb-4">Symptom Assessment (แบบประเมินอาการ)</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <ul class="nav nav-tabs mb-3" id="patientTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="assessment-tab" data-bs-toggle="tab" data-bs-target="#assessment-pane" type="button" role="tab">Assessment</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="results-tab" data-bs-toggle="tab" data-bs-target="#results-pane" type="button" role="tab">Results</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="personal-info-tab" data-bs-toggle="tab" data-bs-target="#personal-info-pane" type="button" role="tab">Personal information</button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <!-- ASSESSMENT TAB -->
+        <div class="tab-pane fade show active" id="assessment-pane" role="tabpanel">
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        How many days in a week do you have symptoms?
+                        <br><span class="text-muted">(1 สัปดาห์คุณมีอาการกี่วัน)</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="symptom_frequency"
+                      class="form-control"
+                      min="0"
+                      max="7"
+                      required
+                    >
+                </div>
+                {% if need_followup %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        เคยใช้ยาสเตียรอยด์พ่นจมูกมาก่อนหรือไม่?
+                    </label>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio"
+                            name="used_steroid_before" value="yes" required>
+                        <label class="form-check-label">เคยใช้</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio"
+                            name="used_steroid_before" value="no">
+                        <label class="form-check-label">ไม่เคยใช้</label>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="mb-3 row">
+                <label class="col-sm-2 col-form-label">Report Date (วันที่)</label>
+                <div class="col-sm-4">
+                    <input type="date" name="report_date" class="form-control" value="{{ today if today is defined else '' }}" required>
+                </div>
+            </div>
+
+            <hr>
+            <h5 class="mb-3">Rate Your Symptoms (0 = none → 10 = severe)</h5>
+            
+            <div class="mb-4">
+                <label class="form-label fw-semibold">
+                    Overall symptom severity (VAS 0–10)
+                    <br><span class="text-muted">
+                    Overall severity of your nasal/allergy symptoms
+                    </span>
+                </label>
+
+                <input
+                    type="range"
+                    class="form-range"
+                    name="vas_score"
+                    min="0"
+                    step="0.1"
+                    max="10"
+                    value="0"
+                    oninput="document.getElementById('vas_val').innerText=this.value"
+                    required
+                >
+
+                <div class="text-end">
+                    <strong>VAS: <span id="vas_val">0</span></strong>
+                </div>
+            </div>
+
+            <hr>
+            {% macro severity(name, label) %}
+            <div class="mb-3">
+                <label class="form-label">{{ label }}</label>
+                <select name="{{ name }}" class="form-select" required>
+                    <option value="0">No symptoms</option>
+                    <option value="1">Slight</option>
+                    <option value="2">Mild</option>
+                    <option value="3">Severe</option>
+                </select>
+            </div>
+            {% endmacro %}
+            {{ severity("Frequently sneeze", "Frequently sneeze (มีอาการคันจมูกบ่อย)") }}
+            {{ severity("Stuffed nose", "Stuffed nose (คัดจมูก)") }}
+            {{ severity("runny nose", "Runny nose (มีน้ำจมูกไหล)") }}
+            {{ severity("itchy nose", "Itchy nose (คันจมูก)") }}
+            {{ severity("phlegm_throat", "Feeling of phlegm in throat (รู้สึกมีเสมหะ)") }}
+            {{ severity("itchy_eyes", "Itchy / red eyes (คันตา ตาแดง)") }}
+            {{ severity("watery_eyes", "Watery eyes (น้ำตาไหลบ่อย)") }}
+            {{ severity("chronic_cough", "Chronic cough (ไอเรื้อรัง)") }}
+            {{ severity("itchy_throat", "Itchy throat / frequent clearing (คันคอ)") }}
+            {{ severity("sore_throat", "Sore throat often (เจ็บคอบ่อย)") }}
+            {{ severity("headache", "Frequent headaches (ปวดศีรษะบ่อย)") }}
+            {{ severity("dry_mouth", "Dry mouth (รู้สึกปากแห้ง)") }}
+            {{ severity("fatigue", "Easily tired / fatigued (เหนื่อยง่าย อ่อนเพลีย)") }}
+            {{ severity("snoring", "Snoring or noisy breathing while sleeping (นอนกรน)") }}
+            {{ severity("mouth_breathing", "Mouth breathing (ต้องหายใจทางปาก)") }}
+            {{ severity("poor_sleep", "Poor sleep / waking at night (หลับไม่สนิท)") }}
+            {{ severity("daytime_sleepiness", "Daytime sleepiness (ง่วงนอนตอนกลางวัน)") }}
+            {{ severity("loss_of_smell", "Loss of smell (จมูกไม่ได้กลิ่น)") }}
+
+            <div class="mb-3">
+                <label class="form-label">Other symptom (describe):</label>
+                <textarea name="other_symptom" class="form-control" rows="2"></textarea>
+            </div>
+       
+
+.
+  <!-- medicine effect: shown only when there is at least one previous record -->
+  {% if show_medicine_effect_question %}
+  <div class="form-group mb-3">
+    <label class="form-label">ผลของยาทำให้คุณรู้สึกดีขึ้นแค่ไหน</label>
+    <div>
+      {% for val, label in [(-3,'-3'),(-2,'-2'),(-1,'-1'),(0,'0'),(1,'+1'),(2,'+2'),(3,'+3')] %}
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="medicine_effect" id="medicine_effect_{{ loop.index }}" value="{{ val }}">
+        <label class="form-check-label" for="medicine_effect_{{ loop.index }}">{{ label }}</label>
+      </div>
+      {% endfor %}
+    </div>
+    <small class="form-text text-muted">This answer will be written into the previous symptom record's medicine_effect field.</small>
+  </div>
+  {% endif %}
+
+
+
+            <button class="btn btn-primary w-100 mt-3">Submit Assessment</button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">Logout</a>
+            </div>
+        </div>
+      
+      <!-- RESULTS TAB -->
+        <div class="tab-pane fade" id="results-pane" role="tabpanel">
+            <div class="mb-3">
+                <h5>ผลการประเมินและยาที่แนะนำ</h5>
+                <div class="rec-card mb-3">
+                    {% if reports %}
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h5 class="history-title">Assessment History</h5>
+
+                            <div class="accordion" id="assessmentAccordion">
+                            {% for r in reports %}
+                            <div class="accordion-item mb-2">
+                                <h2 class="accordion-header" id="heading{{ loop.index }}">
+                                <button
+                                    class="accordion-button collapsed d-flex align-items-center gap-2"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#collapse{{ loop.index }}"
+                                    aria-expanded="false"
+                                    aria-controls="collapse{{ loop.index }}"
+                                >
+                                    <span class="me-2">Date:</span>
+                                    <span class="fw-semibold">{{ r.created_at[:10] }}</span>
+                                </button>
+                                </h2>
+
+                                <div
+                                id="collapse{{ loop.index }}"
+                                class="accordion-collapse collapse"
+                                aria-labelledby="heading{{ loop.index }}"
+                                data-bs-parent="#assessmentAccordion"
+                                >
+                                <div class="accordion-body">
+                                    <!-- FIX 1: Added closing bracket to div below -->
+                                    <div class="recommendation-box">
+<pre style="font-family: Arial;">VAS Score: {{ r.avg_vas }}
+Severity: {{ r.pattern }}
+
+{{ r.recommendation | replace('\n– ', '\n• ') | safe}}</pre>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div> 
+
+        <!-- 👤 Patient Profile -->
+        <div class="tab-pane fade" id="personal-info-pane" role="tabpanel">
+            <h5></h5>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-1">{{ patient.full_name }}</h5>
+                    <div class="text-muted mb-3">Your Profile</div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="info-label">Email</div>
+                            <div>{{ patient.email or "-" }}</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="info-label">Phone</div>
+                            <div>{{ patient.phone or "-" }}</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="info-label">Gender / DOB</div>
+                            <div>
+                                {{ patient.gender or "-" }}
+                                {% if patient.dob %} / {{ patient.dob }}{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="info-label">Address</div>
+                            <div>{{ patient.address or "-" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">Logout</a>
+            </div>
+        </div>
+
+    </div> <!-- End tab-content -->
+</div> <!-- End container -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
