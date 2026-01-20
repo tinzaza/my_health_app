@@ -305,6 +305,7 @@ def login():
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
+        print("SIGNUP FORM:", dict(request.form))
         conn = get_db()
         cur = conn.cursor()
 
