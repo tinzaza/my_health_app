@@ -751,7 +751,8 @@ def patient_form():
         elif prev_follow_up == 2 and avg_vas >= 5:
             next_follow_up = 3
 
-        raw_form = {k: request.form.get(k) for k in request.form}
+        raw_form = json.dumps({k: request.form.get(k) for k in request.form})
+
 
         # ----- medicine_effect: update previous row -----
         medicine_effect_answer = request.form.get("medicine_effect")
