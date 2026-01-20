@@ -22,7 +22,7 @@
     {% endwith %}
 
 
-    <form method="POST" action="{{ url_for('signup') }}">
+    <form method="POST" action="{{ url_for('signup') }}" novalidate>
 
         <!-- ================= STEP 1 ================= -->
         <div id="step1">
@@ -81,12 +81,10 @@
                 <!-- Doctor code -->
                 <div class="col-md-6 d-none" id="doctorCodeWrapper">
                     <label class="form-label">Doctor Signup Code</label>
-                    <input name="doctor_code">
+                    <input name="doctor_code" type="password" class="form-control">
                     <small class="text-muted">
                         Required for doctor registration only.
                     </small>
-                </div>
-                <div>
                     <button type="submit" class="btn btn-primary mt-4">
                         Submit
                     </button>
