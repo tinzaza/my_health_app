@@ -779,7 +779,7 @@ def patient_form():
             pattern,
             recommendation,
             next_follow_up,
-            report_date,
+            report_date.isoformat(),
             raw_form,          # JSONB
             None
         ))
