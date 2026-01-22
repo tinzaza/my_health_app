@@ -114,11 +114,11 @@
             </div>
 
             <hr>
-            <h5 class="mb-3">Rate Your Symptoms (0 = none → 10 = severe)</h5>
+            <h5 class="mb-3">VAS Score</h5>
             
             <div class="mb-4">
                 <label class="form-label fw-semibold">
-                    Overall symptom severity (VAS 0–10)
+                    โรคภูมิแพ้มีผลต่อการใช้ชีวิตประจำวันของคุณแค่ไหน (0 = ไม่มีผลกระทบ, 10 = รบกวนมากที่สุด)
                     <br><span class="text-muted">
                     Overall severity of your nasal/allergy symptoms
                     </span>
@@ -142,14 +142,32 @@
             </div>
 
             <hr>
+
+            <!-- medicine effect: shown only when there is at least one previous record -->
+            {% if show_medicine_effect_question %}
+            <div class="form-group mb-3">
+                <label class="form-label">ผลของยาทำให้คุณรู้สึกดีขึ้นแค่ไหน</label>
+                <div>
+                {% for val, label in [(-3,'-3'),(-2,'-2'),(-1,'-1'),(0,'0'),(1,'+1'),(2,'+2'),(3,'+3')] %}
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="medicine_effect" id="medicine_effect_{{ loop.index }}" value="{{ val }}">
+                    <label class="form-check-label" for="medicine_effect_{{ loop.index }}">{{ label }}</label>
+                </div>
+                {% endfor %}
+                </div>
+                <small class="form-text text-muted">This answer will be written into the previous symptom record's medicine_effect field.</small>
+            </div>
+            {% endif %}
+
+            <hr>
             {% macro severity(name, label) %}
             <div class="mb-3">
                 <label class="form-label">{{ label }}</label>
                 <select name="{{ name }}" class="form-select" required>
-                    <option value="0">No symptoms</option>
-                    <option value="1">Slight</option>
-                    <option value="2">Mild</option>
-                    <option value="3">Severe</option>
+                    <option value="0">ไม่มีอาการ</option>
+                    <option value="1">เบา</option>
+                    <option value="2">ปานกลาง</option>
+                    <option value="3">รุนแรง</option>
                 </select>
             </div>
             {% endmacro %}
@@ -157,6 +175,7 @@
             {{ severity("Stuffed nose", "Stuffed nose (คัดจมูก)") }}
             {{ severity("runny nose", "Runny nose (มีน้ำจมูกไหล)") }}
             {{ severity("itchy nose", "Itchy nose (คันจมูก)") }}
+            <br>
             {{ severity("phlegm_throat", "Feeling of phlegm in throat (รู้สึกมีเสมหะ)") }}
             {{ severity("itchy_eyes", "Itchy / red eyes (คันตา ตาแดง)") }}
             {{ severity("watery_eyes", "Watery eyes (น้ำตาไหลบ่อย)") }}
@@ -178,22 +197,7 @@
             </div>
        
 
-.
-  <!-- medicine effect: shown only when there is at least one previous record -->
-  {% if show_medicine_effect_question %}
-  <div class="form-group mb-3">
-    <label class="form-label">ผลของยาทำให้คุณรู้สึกดีขึ้นแค่ไหน</label>
-    <div>
-      {% for val, label in [(-3,'-3'),(-2,'-2'),(-1,'-1'),(0,'0'),(1,'+1'),(2,'+2'),(3,'+3')] %}
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="medicine_effect" id="medicine_effect_{{ loop.index }}" value="{{ val }}">
-        <label class="form-check-label" for="medicine_effect_{{ loop.index }}">{{ label }}</label>
-      </div>
-      {% endfor %}
-    </div>
-    <small class="form-text text-muted">This answer will be written into the previous symptom record's medicine_effect field.</small>
-  </div>
-  {% endif %}
+  
 
 
 
