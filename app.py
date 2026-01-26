@@ -157,8 +157,7 @@ def init_db():
         daily_activity_limit TEXT,
 
         feel_calm TEXT,
-        feel_energetic1 TEXT,
-        feel_energetic2 TEXT,
+        feel_energetic TEXT,
         feel_sad TEXT,
         social_limit TEXT
     )
@@ -439,8 +438,7 @@ def signup():
                     "daily_activity_limit": request.form.get("daily_activity_limit"),
 
                     "feel_calm": request.form.get("feel_calm"),
-                    "feel_energetic1": request.form.get("feel_energetic1"),
-                    "feel_energetic2": request.form.get("feel_energetic2"),
+                    "feel_energetic": request.form.get("feel_energetic"),
                     "feel_sad": request.form.get("feel_sad"),
                     "social_limit": request.form.get("social_limit"),
                 }
@@ -645,7 +643,7 @@ def patient_detail(patient_id):
             h.work_less_physical, h.work_careful_physical,
             h.work_less_emotional, h.work_careless_emotional,
             h.daily_activity_limit,
-            h.feel_calm, h.feel_energetic1, h.feel_energetic2, h.feel_sad, h.social_limit
+            h.feel_calm, h.feel_energetic, h.feel_sad, h.social_limit
         FROM users u
         LEFT JOIN patient_profiles p ON u.id = p.user_id
         LEFT JOIN patient_history h ON u.id = h.user_id
@@ -724,7 +722,7 @@ def patient_form():
             return redirect(url_for("patient_form"))
 
         freq = int(request.form["symptom_frequency"])
-        avg_vas = float(request.form["vas_score"])
+        avg_vas = (float(request.form["vas_score1"])+float(request.form["vas_score2"])+float(request.form["vas_score3"]))/3
         pattern = classify_pattern(freq)
         used_steroid = request.form.get("used_steroid_before", "no")
         prev_follow_up = follow_up
@@ -752,7 +750,12 @@ def patient_form():
         elif prev_follow_up == 2 and avg_vas >= 5:
             next_follow_up = 3
 
-        raw_form = json.dumps({k: request.form.get(k) for k in request.form})
+        # Create dictionary from form data and explicitly add VAS scores
+        form_data = {k: request.form.get(k) for k in request.form}
+        form_data['vas_score1'] = request.form.get('vas_score1')
+        form_data['vas_score2'] = request.form.get('vas_score2')
+        form_data['vas_score3'] = request.form.get('vas_score3')
+        raw_form = json.dumps(form_data)
 
 
         # ----- medicine_effect: update previous row -----

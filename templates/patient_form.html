@@ -118,16 +118,64 @@
             
             <div class="mb-4">
                 <label class="form-label fw-semibold">
-                    โรคภูมิแพ้มีผลต่อการใช้ชีวิตประจำวันของคุณแค่ไหน (0 = ไม่มีผลกระทบ, 10 = รบกวนมากที่สุด)
+                    VAS: Overall daily-life ในช่วง 7 วันที่ผ่านมา อาการภูมิแพ้รบกวนการใช้ชีวิตประจำวันของคุณมากน้อยเพียงใด
                     <br><span class="text-muted">
-                    Overall severity of your nasal/allergy symptoms
+                    (0 = ไม่มีผลกระทบ, 10 = รบกวนมากที่สุด)
                     </span>
                 </label>
 
                 <input
                     type="range"
                     class="form-range"
-                    name="vas_score"
+                    name="vas_score1"
+                    min="0"
+                    step="0.1"
+                    max="10"
+                    value="0"
+                    oninput="document.getElementById('vas_val').innerText=this.value"
+                    required
+                >
+
+                <div class="text-end">
+                    <strong>VAS: <span id="vas_val">0</span></strong>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-semibold">
+                    VAS: Work/Study productivity ในช่วง 7 วันที่ผ่านมา อาการภูมิแพ้กระทบการทำงาน/การเรียนของคุณมากน้อยเพียงใด
+                    <br><span class="text-muted">
+                    (0 = ไม่มีผลกระทบ, 10 = รบกวนมากที่สุด)
+                    </span>
+                </label>
+
+                <input
+                    type="range"
+                    class="form-range"
+                    name="vas_score2"
+                    min="0"
+                    step="0.1"
+                    max="10"
+                    value="0"
+                    oninput="document.getElementById('vas_val').innerText=this.value"
+                    required
+                >
+
+                <div class="text-end">
+                    <strong>VAS: <span id="vas_val">0</span></strong>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-semibold">
+                    VAS: Sleep disturbance ในช่วง 7 วันที่ผ่านมา อาการภูมิแพ้รบกวนการนอนหลับของคุณมากน้อยเพียงใด
+                    <br><span class="text-muted">
+                        (0 = ไม่มีผลกระทบ, 10 = รบกวนมากที่สุด)
+                    </span>
+                </label>
+
+                <input
+                    type="range"
+                    class="form-range"
+                    name="vas_score3"
                     min="0"
                     step="0.1"
                     max="10"
@@ -146,9 +194,9 @@
             <!-- medicine effect: shown only when there is at least one previous record -->
             {% if show_medicine_effect_question %}
             <div class="form-group mb-3">
-                <label class="form-label">ผลของยาทำให้คุณรู้สึกดีขึ้นแค่ไหน</label>
+                <label class="form-label">จากการรักษาครั้งล่าสุด ตอนนี้อาการของคุณเป็นอย่างไร</label>
                 <div>
-                {% for val, label in [(-3,'-3'),(-2,'-2'),(-1,'-1'),(0,'0'),(1,'+1'),(2,'+2'),(3,'+3')] %}
+                {% for val, label in [(-3,'-3 อาการแย่ลงมาก'),(-2,'-2 อาการแย่ลง'),(-1,'-1 อาการแย่ลงเล็กน้อย'),(0,'0 อาการพอๆ เดิม'),(1,'+1 อาการดีขึ้นเล็กน้อย'),(2,'+2 อาการดีขึ้น'),(3,'+3 อาการดีขึ้นมาก')] %}
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="medicine_effect" id="medicine_effect_{{ loop.index }}" value="{{ val }}">
                     <label class="form-check-label" for="medicine_effect_{{ loop.index }}">{{ label }}</label>
@@ -172,9 +220,9 @@
             </div>
             {% endmacro %}
             {{ severity("Frequently sneeze", "Frequently sneeze (มีอาการคันจมูกบ่อย)") }}
-            {{ severity("Stuffed nose", "Stuffed nose (คัดจมูก)") }}
             {{ severity("runny nose", "Runny nose (มีน้ำจมูกไหล)") }}
             {{ severity("itchy nose", "Itchy nose (คันจมูก)") }}
+            {{ severity("Stuffed nose", "ฺBlocked or Stuffed nose (คัด/แน่นจมูก)") }}
             <hr>
             {{ severity("phlegm_throat", "Feeling of phlegm in throat (รู้สึกมีเสมหะ)") }}
             {{ severity("itchy_eyes", "Itchy / red eyes (คันตา ตาแดง)") }}
