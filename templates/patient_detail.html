@@ -261,8 +261,28 @@
                     {% if r.data %}
                     <table class="table table-sm symptom-table">
                         <tbody>
+                        <!-- Explicitly show VAS scores first -->
+                        {% if r.data.get('vas_score1') %}
+                        <tr>
+                            <td class="symptom-name">VAS 1 (Daily Life)</td>
+                            <td class="text-end score">{{ r.data['vas_score1'] }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if r.data.get('vas_score2') %}
+                        <tr>
+                            <td class="symptom-name">VAS 2 (Work/Study)</td>
+                            <td class="text-end score">{{ r.data['vas_score2'] }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if r.data.get('vas_score3') %}
+                        <tr>
+                            <td class="symptom-name">VAS 3 (Sleep)</td>
+                            <td class="text-end score">{{ r.data['vas_score3'] }}</td>
+                        </tr>
+                        {% endif %}
+
                         {% for key, value in r.data.items() %}
-                            {% if key != "used_steroid_before" %}
+                            {% if key not in ["used_steroid_before", "vas_score1", "vas_score2", "vas_score3"] %}
                             <tr>
                                 <td class="symptom-name">
                                     {{ key.replace("_", " ").title() }}
