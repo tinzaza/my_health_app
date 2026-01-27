@@ -6,6 +6,9 @@ from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import Markup
+import smtplib
+from email.mime.text import MIMEText
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 
@@ -26,6 +29,57 @@ def get_db():
         cursor_factory=RealDictCursor,
         sslmode=sslmode
     )
+
+## ---------- email reminder (2 weeks) ---------- #
+
+def ensure_email_sent_column():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        ALTER TABLE symptoms
+        ADD COLUMN IF NOT EXISTS email_sent BOOLEAN DEFAULT FALSE;
+    """)
+    conn.commit()
+    cur.close()
+    conn.close()
+    print("✅ email_sent column ensured")
+
+
+def check_two_weeks_passed():
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT s.id, s.user_id, s.created_at
+        FROM symptoms s
+        WHERE s.created_at + INTERVAL '1 minute' <= NOW()
+        AND s.email_sent = FALSE
+    """)
+
+    rows = cur.fetchall()
+
+    for row in rows:
+        print("⏰ 2 weeks passed for symptom ID:", row["id"])
+
+        # mark as sent (prevents duplicates)
+        cur.execute("""
+            UPDATE symptoms
+            SET email_sent = TRUE
+            WHERE id = %s
+        """, (row["id"],))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+# ---- run once on app start ----
+ensure_email_sent_column()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(check_two_weeks_passed, "interval", minutes=1)
+scheduler.start()
+print("🟢 Reminder scheduler started")
 
 
 
