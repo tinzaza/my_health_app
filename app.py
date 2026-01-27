@@ -45,23 +45,56 @@ def ensure_email_sent_column():
     print("✅ email_sent column ensured")
 
 
+def ensure_submitted_at_column():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        ALTER TABLE symptoms
+        ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP;
+    """)
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def send_reminder_email(to_email):
+    msg = MIMEText(
+        "ครบกำหนด 2 สัปดาห์หลังจากการบันทึกอาการภูมิแพ้ของคุณ\n\n"
+        "กรุณาเข้าสู่ระบบเพื่อประเมินอาการอีกครั้ง "
+        "หรือปรึกษาแพทย์หากอาการไม่ดีขึ้น\n\n"
+        "Allergy Monitoring System"
+    )
+    msg["Subject"] = "แจ้งเตือนติดตามอาการภูมิแพ้ (2 สัปดาห์)"
+    msg["From"] = os.environ["EMAIL"]
+    msg["To"] = to_email
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(
+            os.environ["EMAIL"],
+            os.environ["EMAIL_PASSWORD"]
+        )
+        server.send_message(msg)
+
+    print(f"📧 Email sent to {to_email}")
+
 def check_two_weeks_passed():
     conn = get_db()
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT s.id, s.user_id, s.created_at
+        SELECT s.id, p.email
         FROM symptoms s
-        WHERE s.created_at + INTERVAL '1 minute' <= NOW()
+        JOIN patient_profiles p ON s.user_id = p.user_id
+        WHERE s.submitted_at IS NOT NULL
+        AND s.submitted_at + INTERVAL '14 days' <= NOW()
         AND s.email_sent = FALSE
+        AND p.email IS NOT NULL
     """)
 
     rows = cur.fetchall()
 
     for row in rows:
-        print("⏰ 2 weeks passed for symptom ID:", row["id"])
+        send_reminder_email(row["email"])
 
-        # mark as sent (prevents duplicates)
         cur.execute("""
             UPDATE symptoms
             SET email_sent = TRUE
@@ -73,15 +106,20 @@ def check_two_weeks_passed():
     conn.close()
 
 
+
+
+
+
+
+
 # ---- run once on app start ----
 ensure_email_sent_column()
+ensure_submitted_at_column()
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(check_two_weeks_passed, "interval", minutes=1)
 scheduler.start()
 print("🟢 Reminder scheduler started")
-
-
 
 
 
@@ -826,24 +864,22 @@ def patient_form():
 
         # insert new record
         cur.execute("""
-            INSERT INTO symptoms
-            (user_id, avg_vas, tnss, pattern, recommendation,
-             follow_up, created_at, raw_form, medicine_effect)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
-        """, (
-            session["user_id"],
-            avg_vas,
-            tnss,
-            pattern,
-            recommendation,
-            next_follow_up,
-            report_date.isoformat(),
-            raw_form,          # JSONB
-            None
-        ))
+                        INSERT INTO symptoms
+                        (user_id, avg_vas, tnss, pattern, recommendation,
+                        follow_up, created_at, submitted_at, raw_form, medicine_effect)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,NOW(),%s,%s)
+                    """, (
+                        session["user_id"],
+                        avg_vas,
+                        tnss,
+                        pattern,
+                        recommendation,
+                        next_follow_up,
+                        report_date.isoformat(),  # patient date stays
+                        raw_form,
+                        None
+                    ))
 
-        conn.commit()
-        conn.close()
 
         flash("บันทึกข้อมูลเรียบร้อย ดูผลการประเมินที่หน้า Result", "success")
         return redirect(url_for("patient_form", show_result="1"))
