@@ -806,6 +806,11 @@ def patient_form():
         form_data['vas_score1'] = request.form.get('vas_score1')
         form_data['vas_score2'] = request.form.get('vas_score2')
         form_data['vas_score3'] = request.form.get('vas_score3')
+
+        # Capture multi-select fields from the medication section
+        form_data['antihistamine_type'] = request.form.getlist('antihistamine_type')
+        form_data['incs_type'] = request.form.getlist('incs_type')
+
         raw_form = json.dumps(form_data)
 
 
