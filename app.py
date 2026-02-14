@@ -63,7 +63,7 @@ def check_one_day_passed():
             FROM symptoms s
             JOIN patient_profiles p ON s.user_id = p.user_id
             WHERE s.created_at IS NOT NULL
-            AND s.created_at + INTERVAL '1 day' <= NOW()
+            AND s.created_at + INTERVAL '14 days 9 hours' <= NOW()
             AND s.email_sent = FALSE
             AND p.email IS NOT NULL
         """)
