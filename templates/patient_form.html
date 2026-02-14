@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Symptom Assessment & Results</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
     /* Global font */
     body {
@@ -244,11 +243,206 @@
                 <label class="form-label">Other symptom (describe):</label>
                 <textarea name="other_symptom" class="form-control" rows="2"></textarea>
             </div>
-       
 
-  
+            <h4>ในช่วงที่ผ่านมา เวลาใดของวันที่ท่านมีอาการ</h4>
+                <label><input type="checkbox" name="time_6_12"> 6-12 น.</label><br>
+                <label><input type="checkbox" name="time_12_18"> 12-18 น.</label><br>
+                <label><input type="checkbox" name="time_18_24"> 18-24 น.</label><br>
+                <label><input type="checkbox" name="time_24_6"> 24-6 น.</label><br>
+                <label><input type="checkbox" name="time_all_day"> มีอาการทั้งวัน</label><br>
+                <label><input type="checkbox" name="time_uncertain"> เวลาที่เกิดอาการ ไม่แน่นอน</label><br>
 
+            <h4 class="mt-4">ในช่วงที่ผ่านมา ท่านใช้ยาต่อไปนี้บ่อยเพียงใด</h4>
 
+            <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:35%">ความถี่</th>
+                        <th>ยาพ่นจมูก</th>
+                        <th>ยาแก้แพ้</th>
+                        <th>ยาแก้คัดจมูก</th>
+                        <th>อื่นๆ</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <!-- ใช้ทุกวัน -->
+                    <tr>
+                        <td>วันละ 1 ครั้ง</td>
+                        <td><input type="radio" name="nasal_spray_freq" value="daily_1"></td>
+                        <td><input type="radio" name="antihistamine_freq" value="daily_1"></td>
+                        <td><input type="radio" name="decongestant_freq" value="daily_1"></td>
+                        <td><input type="radio" name="other_freq" value="daily_1"></td>
+                    </tr>
+
+                    <tr>
+                        <td>วันละ 2 ครั้ง</td>
+                        <td><input type="radio" name="nasal_spray_freq" value="daily_2"></td>
+                        <td><input type="radio" name="antihistamine_freq" value="daily_2"></td>
+                        <td><input type="radio" name="decongestant_freq" value="daily_2"></td>
+                        <td><input type="radio" name="other_freq" value="daily_2"></td>
+                    </tr>
+
+                    <tr>
+                        <td>มากกว่าวันละ 2 ครั้ง</td>
+                        <td><input type="radio" name="nasal_spray_freq" value="daily_more"></td>
+                        <td><input type="radio" name="antihistamine_freq" value="daily_more"></td>
+                        <td><input type="radio" name="decongestant_freq" value="daily_more"></td>
+                        <td><input type="radio" name="other_freq" value="daily_more"></td>
+                    </tr>
+
+                    <!-- สัปดาห์ -->
+                    <tr class="table-secondary">
+                        <td colspan="5"><strong>ถ้าท่านใช้ยาทุกสัปดาห์ แต่ไม่ได้ใช้ทุกวัน</strong></td>
+                    </tr>
+
+                    <tr>
+                        <td>สัปดาห์ละ 1 ครั้ง</td>
+                        <td><input type="radio" name="nasal_spray_freq" value="weekly_1"></td>
+                        <td><input type="radio" name="antihistamine_freq" value="weekly_1"></td>
+                        <td><input type="radio" name="decongestant_freq" value="weekly_1"></td>
+                        <td><input type="radio" name="other_freq" value="weekly_1"></td>
+                    </tr>
+
+                    <tr>
+                        <td>สัปดาห์ละ 2 ครั้ง</td>
+                        <td><input type="radio" name="nasal_spray_freq" value="weekly_2"></td>
+                        <td><input type="radio" name="antihistamine_freq" value="weekly_2"></td>
+                        <td><input type="radio" name="decongestant_freq" value="weekly_2"></td>
+                        <td><input type="radio" name="other_freq" value="weekly_2"></td>
+                    </tr>
+
+                    <tr>
+                        <td>วันเว้นวัน (3-4 ครั้งต่อสัปดาห์)</td>
+                        <td><input type="radio" name="nasal_spray_freq" value="weekly_3_4"></td>
+                        <td><input type="radio" name="antihistamine_freq" value="weekly_3_4"></td>
+                        <td><input type="radio" name="decongestant_freq" value="weekly_3_4"></td>
+                        <td><input type="radio" name="other_freq" value="weekly_3_4"></td>
+                    </tr>
+
+                    <!-- เดือน -->
+                    <tr class="table-secondary">
+                        <td colspan="5"><strong>ถ้าท่านใช้ยาทุกเดือน แต่ไม่ได้ใช้ทุกสัปดาห์</strong></td>
+                    </tr>
+
+                    <tr>
+                        <td>เดือนละ 1 ครั้ง</td>
+                        <td><input type="radio" name="nasal_spray_freq" value="monthly_1"></td>
+                        <td><input type="radio" name="antihistamine_freq" value="monthly_1"></td>
+                        <td><input type="radio" name="decongestant_freq" value="monthly_1"></td>
+                        <td><input type="radio" name="other_freq" value="monthly_1"></td>
+                    </tr>
+
+                    <tr>
+                        <td>เดือนละ 2 ครั้ง</td>
+                        <td><input type="radio" name="nasal_spray_freq" value="monthly_2"></td>
+                        <td><input type="radio" name="antihistamine_freq" value="monthly_2"></td>
+                        <td><input type="radio" name="decongestant_freq" value="monthly_2"></td>
+                        <td><input type="radio" name="other_freq" value="monthly_2"></td>
+                    </tr>
+
+                    <tr>
+                        <td>มากกว่าเดือนละ 2 ครั้ง</td>
+                        <td><input type="radio" name="nasal_spray_freq" value="monthly_more"></td>
+                        <td><input type="radio" name="antihistamine_freq" value="monthly_more"></td>
+                        <td><input type="radio" name="decongestant_freq" value="monthly_more"></td>
+                        <td><input type="radio" name="other_freq" value="monthly_more"></td>
+                    </tr>
+
+                    <!-- เฉพาะเวลามีอาการ -->
+                    <tr>
+                        <td>เฉพาะเวลาที่มีอาการ</td>
+                        <td><input type="radio" name="nasal_spray_freq" value="only_when_symptom"></td>
+                        <td><input type="radio" name="antihistamine_freq" value="only_when_symptom"></td>
+                        <td><input type="radio" name="decongestant_freq" value="only_when_symptom"></td>
+                        <td><input type="radio" name="other_freq" value="only_when_symptom"></td>
+                    </tr>
+
+                </tbody>
+            </table>
+            <h5 class="mt-4">ชนิดของยาแก้แพ้ที่ใช้</h5>
+
+                <div class="row">
+
+                <div class="col-md-6">
+                    <label><input type="checkbox" name="antihistamine_type" value="Chlorpheniramine">
+                    Chlorpheniramine (CPM)
+                    </label><br>
+
+                    <label><input type="checkbox" name="antihistamine_type" value="Hydroxyzine">
+                    Hydroxyzine (Atarax)
+                    </label><br>
+
+                    <label><input type="checkbox" name="antihistamine_type" value="Cetirizine">
+                    Cetirizine (Zyrtec, Alerest)
+                    </label><br>
+
+                    <label><input type="checkbox" name="antihistamine_type" value="Loratadine">
+                    Loratadine (Clarityne)
+                    </label><br>
+                </div>
+
+                <div class="col-md-6">
+                    <label><input type="checkbox" name="antihistamine_type" value="Levocetirizine">
+                    Levocetirizine (Xyzal)
+                    </label><br>
+
+                    <label><input type="checkbox" name="antihistamine_type" value="Desloratadine">
+                    Desloratadine (Aerius)
+                    </label><br>
+
+                    <label><input type="checkbox" name="antihistamine_type" value="Bilastine">
+                    Bilastine (Bilaxten)
+                    </label><br>
+
+                    <label><input type="checkbox" name="antihistamine_type" value="Rupatadine">
+                    Rupatadine (Rupafin)
+                    </label><br>
+                </div>
+
+                </div>
+            <h5 class="mt-4">ชนิดของยาพ่นสเตียรอยด์จมูก (INCS)</h5>
+
+                <div class="row">
+
+                <div class="col-md-6">
+                    <label><input type="checkbox" name="incs_type" value="Fluticasone furoate">
+                    Fluticasone furoate (Avamys)
+                    </label><br>
+
+                    <label><input type="checkbox" name="incs_type" value="Mometasone">
+                    Mometasone (Nasonex)
+                    </label><br>
+
+                    <label><input type="checkbox" name="incs_type" value="Budesonide">
+                    Budesonide (Rhinocort)
+                    </label><br>
+                </div>
+
+                <div class="col-md-6">
+                    <label><input type="checkbox" name="incs_type" value="Triamcinolone">
+                    Triamcinolone (Nasacort)
+                    </label><br>
+
+                    <label><input type="checkbox" name="incs_type" value="Beclomethasone">
+                    Beclomethasone (Beconase)
+                    </label><br>
+
+                    <label><input type="checkbox" name="incs_type" value="Dymista">
+                    Fluticasone propionate / Azelastine (Dymista)
+                    </label><br>
+                </div>
+
+                </div>
+            </div>
+
+            <!-- ช่องกรอกชื่อยาอื่นๆ -->
+            <div class="mt-3">
+                <label><strong>กรณีเลือก “อื่นๆ” โปรดระบุชื่อยา:</strong></label>
+                <input type="text" name="other_medicine_name" class="form-control">
+            </div>
 
             <button class="btn btn-primary w-100 mt-3">Submit Assessment</button>
             </form>
@@ -261,16 +455,6 @@
         <div class="tab-pane fade" id="results-pane" role="tabpanel">
             <div class="mb-3">
                 <h5>ผลการประเมินและยาที่แนะนำ</h5>
-
-                {% if reports %}
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">VAS Score Trend</h5>
-                        <canvas id="vasChart" style="max-height: 300px;"></canvas>
-                    </div>
-                </div>
-                {% endif %}
-
                 <div class="rec-card mb-3">
                     {% if reports %}
                     <div class="card mt-4">
@@ -300,15 +484,15 @@
                                 aria-labelledby="heading{{ loop.index }}"
                                 data-bs-parent="#assessmentAccordion"
                                 >
-                                <div class="accordion-body">
-                                    <!-- FIX 1: Added closing bracket to div below -->
-                                    <div class="recommendation-box">
+                                    <div class="accordion-body">
+                                        <!-- FIX 1: Added closing bracket to div below -->
+                                        <div class="recommendation-box">
 <pre style="font-family: Arial;">VAS Score: {{ r.avg_vas }}
 Severity: {{ r.pattern }}
 
 {{ r.recommendation | replace('\n– ', '\n• ') | safe}}</pre>
+                                        </div>
                                     </div>
-                                </div>
                                 </div>
                             </div>
                             {% endfor %}
@@ -368,51 +552,6 @@ Severity: {{ r.pattern }}
 </div> <!-- End container -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-{% if reports %}
-  const ctx = document.getElementById('vasChart');
-  
-  // Data from server (reversed to show oldest to newest)
-  const labels = [
-    {% for r in reports|reverse %}
-      "{{ r.created_at.strftime('%Y-%m-%d') }}",
-    {% endfor %}
-  ];
-  
-  const data = [
-    {% for r in reports|reverse %}
-      {{ r.avg_vas }},
-    {% endfor %}
-  ];
-
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'VAS Score',
-        data: data,
-        backgroundColor: 'rgba(13, 110, 253, 0.6)',
-        borderColor: 'rgba(13, 110, 253, 1)',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true,
-          max: 10,
-          title: {
-            display: true,
-            text: 'Score'
-          }
-        }
-      }
-    }
-  });
-{% endif %}
-</script>
 
 </body>
 </html>
