@@ -30,86 +30,56 @@ def get_db():
         sslmode=sslmode
     )
 
-## ---------- email reminder (2 weeks) ---------- #
-
-def ensure_email_sent_column():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("""
-        ALTER TABLE symptoms
-        ADD COLUMN IF NOT EXISTS email_sent BOOLEAN DEFAULT FALSE;
-    """)
-    conn.commit()
-    cur.close()
-    conn.close()
-    print("✅ email_sent column ensured")
 
 
+# ---------------- Email Scheduler ---------------- #
 def send_reminder_email(to_email):
+    # NOTE: Configure your email credentials here or via environment variables
+    sender_email = os.environ.get("MAIL_USERNAME", "your_email@gmail.com")
+    sender_password = os.environ.get("MAIL_PASSWORD", "your_password")
+
     msg = MIMEText(
-        "ครบกำหนด 2 สัปดาห์หลังจากการบันทึกอาการภูมิแพ้ของคุณ\n\n"
-        "กรุณาเข้าสู่ระบบเพื่อประเมินอาการอีกครั้ง "
-        "หรือปรึกษาแพทย์หากอาการไม่ดีขึ้น\n\n"
-        "Allergy Monitoring System"
+        "ครบกำหนด 1 วันหลังจากการบันทึกอาการภูมิแพ้ของคุณ\n\n"
+        "กรุณากลับมาประเมินอาการอีกครั้ง"
     )
-    msg["Subject"] = "แจ้งเตือนติดตามอาการภูมิแพ้ (2 สัปดาห์)"
-    msg["From"] = os.environ["EMAIL"]
+    msg["Subject"] = "แจ้งเตือนการติดตามอาการ (1 วัน)"
+    msg["From"] = sender_email
     msg["To"] = to_email
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(
-            os.environ["EMAIL"],
-            os.environ["EMAIL_PASSWORD"]
-        )
-        server.send_message(msg)
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+        print(f"Email sent to {to_email}")
+    except Exception as e:
+        print(f"Error sending email: {e}")
 
-    print(f"📧 Email sent to {to_email}")
-
-def check_two_weeks_passed():
-    conn = get_db()
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT s.id, p.email
-        FROM symptoms s
-        JOIN patient_profiles p ON s.user_id = p.user_id
-        WHERE s.created_at IS NOT NULL
-        AND s.created_at + INTERVAL '1 day' <= NOW()
-        AND s.email_sent = FALSE
-        AND p.email IS NOT NULL
-    """)
-
-    rows = cur.fetchall()
-
-    for row in rows:
-        send_reminder_email(row["email"])
-
+def check_one_day_passed():
+    try:
+        conn = get_db()
+        cur = conn.cursor()
         cur.execute("""
-            UPDATE symptoms
-            SET email_sent = TRUE
-            WHERE id = %s
-        """, (row["id"],))
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-
-
-
-
-
-
-
-# ---- run once on app start ----
-ensure_email_sent_column()
+            SELECT s.id, p.email
+            FROM symptoms s
+            JOIN patient_profiles p ON s.user_id = p.user_id
+            WHERE s.created_at IS NOT NULL
+            AND s.created_at + INTERVAL '1 day' <= NOW()
+            AND s.email_sent = FALSE
+            AND p.email IS NOT NULL
+        """)
+        rows = cur.fetchall()
+        for row in rows:
+            send_reminder_email(row["email"])
+            cur.execute("UPDATE symptoms SET email_sent = TRUE WHERE id = %s", (row["id"],))
+            conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"Scheduler error: {e}")
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(check_two_weeks_passed, "interval", minutes=1)
+scheduler.add_job(check_one_day_passed, "interval", minutes=60)
 scheduler.start()
-print("🟢 Reminder scheduler started")
-
-
 
 
 
@@ -157,7 +127,8 @@ def init_db():
         follow_up INTEGER DEFAULT 0,
         created_at TIMESTAMP,
         raw_form JSONB,
-        medicine_effect INTEGER
+        medicine_effect INTEGER,
+        email_sent BOOLEAN DEFAULT FALSE
     )
     """)
 
@@ -802,7 +773,7 @@ def patient_form():
             return redirect(url_for("patient_form"))
 
         freq = int(request.form["symptom_frequency"])
-        avg_vas = (float(request.form["vas_score1"])+float(request.form["vas_score2"])+float(request.form["vas_score3"]))/3
+        avg_vas = float(request.form["vas_score1"])
         pattern = classify_pattern(freq)
         used_steroid = request.form.get("used_steroid_before", "no")
         prev_follow_up = follow_up
@@ -923,6 +894,55 @@ def patient_form():
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+# ---------------- Email Scheduler ---------------- #
+def send_reminder_email(to_email):
+    # NOTE: Configure your email credentials here or via environment variables
+    sender_email = os.environ.get("MAIL_USERNAME", "your_email@gmail.com")
+    sender_password = os.environ.get("MAIL_PASSWORD", "your_password")
+
+    msg = MIMEText(
+        "ครบกำหนด 1 วันหลังจากการบันทึกอาการภูมิแพ้ของคุณ\n\n"
+        "กรุณากลับมาประเมินอาการอีกครั้ง"
+    )
+    msg["Subject"] = "แจ้งเตือนการติดตามอาการ (1 วัน)"
+    msg["From"] = sender_email
+    msg["To"] = to_email
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+        print(f"Email sent to {to_email}")
+    except Exception as e:
+        print(f"Error sending email: {e}")
+
+def check_one_day_passed():
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT s.id, p.email
+            FROM symptoms s
+            JOIN patient_profiles p ON s.user_id = p.user_id
+            WHERE s.created_at IS NOT NULL
+            AND s.created_at + INTERVAL '1 day' <= NOW()
+            AND s.email_sent = FALSE
+            AND p.email IS NOT NULL
+        """)
+        rows = cur.fetchall()
+        for row in rows:
+            send_reminder_email(row["email"])
+            cur.execute("UPDATE symptoms SET email_sent = TRUE WHERE id = %s", (row["id"],))
+            conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"Scheduler error: {e}")
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(check_one_day_passed, "interval", minutes=60)
+scheduler.start()
 
 if __name__=="__main__":
     app.run(debug=True,port=5000)
