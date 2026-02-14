@@ -838,6 +838,9 @@ def patient_form():
                         raw_form,
                         None
                     ))
+        conn.commit()
+        conn.close()
+
 
 
         flash("บันทึกข้อมูลเรียบร้อย ดูผลการประเมินที่หน้า Result", "success")
