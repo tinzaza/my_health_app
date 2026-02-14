@@ -33,6 +33,27 @@ def get_db():
 
 
 # ---------------- Email Scheduler ---------------- #
+def send_welcome_email(to_email, full_name):
+    sender_email = os.environ.get("MAIL_USERNAME", "your_email@gmail.com")
+    sender_password = os.environ.get("MAIL_PASSWORD", "your_password")
+
+    msg = MIMEText(
+        f"Hello {full_name},\n\n"
+        "Your account has been successfully created.\n"
+        "บัญชีของคุณถูกสร้างเรียบร้อยแล้ว"
+    )
+    msg["Subject"] = "Welcome to Health App"
+    msg["From"] = sender_email
+    msg["To"] = to_email
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+        print(f"Welcome email sent to {to_email}")
+    except Exception as e:
+        print(f"Error sending welcome email: {e}")
+
 def send_reminder_email(to_email):
     # NOTE: Configure your email credentials here or via environment variables
     sender_email = os.environ.get("MAIL_USERNAME", "your_email@gmail.com")
@@ -507,6 +528,10 @@ def signup():
 
             conn.commit()
 
+            # Send welcome email
+            if role == "patient" and request.form.get("email"):
+                send_welcome_email(request.form.get("email"), request.form["full_name"])
+
             flash(
                 "สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบและกรอกแบบประเมินอาการ\n\n"
                 "Signup successful. Please log in and complete the assessment form.",
@@ -934,7 +959,7 @@ def check_one_day_passed():
             FROM symptoms s
             JOIN patient_profiles p ON s.user_id = p.user_id
             WHERE s.created_at IS NOT NULL
-            AND s.created_at + INTERVAL '1 day' <= NOW()
+            AND s.created_at + INTERVAL '14 days 9 hours' <= NOW()
             AND s.email_sent = FALSE
             AND p.email IS NOT NULL
         """)
