@@ -34,8 +34,8 @@ def get_db():
 
 # ---------------- Email Scheduler ---------------- #
 def send_welcome_email(to_email, full_name):
-    sender_email = os.environ.get("MAIL_USERNAME", "your_email@gmail.com")
-    sender_password = os.environ.get("MAIL_PASSWORD", "your_password")
+    sender_email = os.environ.get[EMAIL]
+    sender_password = os.environ.get[EMAIL_PASSWORD]
 
     msg = MIMEText(
         f"Hello {full_name},\n\n"
