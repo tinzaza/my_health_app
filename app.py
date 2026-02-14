@@ -34,19 +34,19 @@ def get_db():
 
 # ---------------- Email Scheduler ---------------- #
 def send_welcome_email(to_email, full_name):
-    sender_email = os.environ("EMAIL")
-    sender_password = os.environ.get("EMAIL_PASSWORD")
-
-    msg = MIMEText(
-        f"Hello {full_name},\n\n"
-        "Your account has been successfully created.\n"
-        "บัญชีของคุณถูกสร้างเรียบร้อยแล้ว"
-    )
-    msg["Subject"] = "Welcome to Health App"
-    msg["From"] = sender_email
-    msg["To"] = to_email
-
     try:
+        sender_email = os.environ.get("EMAIL")
+        sender_password = os.environ.get("EMAIL_PASSWORD")
+
+        msg = MIMEText(
+            f"Hello {full_name},\n\n"
+            "Your account has been successfully created.\n"
+            "บัญชีของคุณถูกสร้างเรียบร้อยแล้ว"
+        )
+        msg["Subject"] = "Welcome to Health App"
+        msg["From"] = sender_email
+        msg["To"] = to_email
+
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(sender_email, sender_password)
             server.send_message(msg)
@@ -56,8 +56,8 @@ def send_welcome_email(to_email, full_name):
 
 def send_reminder_email(to_email):
     # NOTE: Configure your email credentials here or via environment variables
-    sender_email = os.environ.get("MAIL_USERNAME", "your_email@gmail.com")
-    sender_password = os.environ.get("MAIL_PASSWORD", "your_password")
+    sender_email = os.environ.get("EMAIL")
+    sender_password = os.environ.get("EMAIL_PASSWORD")
 
     msg = MIMEText(
         "ครบกำหนด 1 วันหลังจากการบันทึกอาการภูมิแพ้ของคุณ\n\n"
@@ -530,7 +530,10 @@ def signup():
 
             # Send welcome email
             if role == "patient" and request.form.get("email"):
-                send_welcome_email(request.form.get("email"), request.form["full_name"])
+                try:
+                    send_welcome_email(request.form.get("email"), request.form["full_name"])
+                except Exception as e:
+                    print(f"Error sending welcome email: {e}")
 
             flash(
                 "สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบและกรอกแบบประเมินอาการ\n\n"
@@ -928,54 +931,7 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
-# ---------------- Email Scheduler ---------------- #
-def send_reminder_email(to_email):
-    # NOTE: Configure your email credentials here or via environment variables
-    sender_email = os.environ.get("MAIL_USERNAME", "your_email@gmail.com")
-    sender_password = os.environ.get("MAIL_PASSWORD", "your_password")
 
-    msg = MIMEText(
-        "ครบกำหนด 1 วันหลังจากการบันทึกอาการภูมิแพ้ของคุณ\n\n"
-        "กรุณากลับมาประเมินอาการอีกครั้ง"
-    )
-    msg["Subject"] = "แจ้งเตือนการติดตามอาการ (1 วัน)"
-    msg["From"] = sender_email
-    msg["To"] = to_email
-
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
-        print(f"Email sent to {to_email}")
-    except Exception as e:
-        print(f"Error sending email: {e}")
-
-def check_one_day_passed():
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT s.id, p.email
-            FROM symptoms s
-            JOIN patient_profiles p ON s.user_id = p.user_id
-            WHERE s.created_at IS NOT NULL
-            AND s.created_at + INTERVAL '14 days 9 hours' <= NOW()
-            AND s.email_sent = FALSE
-            AND p.email IS NOT NULL
-        """)
-        rows = cur.fetchall()
-        for row in rows:
-            send_reminder_email(row["email"])
-            cur.execute("UPDATE symptoms SET email_sent = TRUE WHERE id = %s", (row["id"],))
-            conn.commit()
-        cur.close()
-        conn.close()
-    except Exception as e:
-        print(f"Scheduler error: {e}")
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(check_one_day_passed, "interval", minutes=60)
-scheduler.start()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
