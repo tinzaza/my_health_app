@@ -122,11 +122,14 @@ def check_one_day_passed():
     except Exception as e:
         print(f"Scheduler error: {e}")
 
-scheduler = BackgroundScheduler(daemon=True)
-scheduler.add_job(check_one_day_passed, "interval", minutes=60)
+def run_reminder_job():
+    check_one_day_passed()
+    return "Reminder job executed"
 
-if not scheduler.running:
-    scheduler.start()
+@app.route("/run-reminder-job")
+def run_reminder():
+    run_reminder_job()
+    return "OK"
 
 
 
