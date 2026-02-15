@@ -38,6 +38,10 @@ def send_welcome_email(to_email, full_name):
         sender_email = os.environ.get("EMAIL")
         sender_password = os.environ.get("EMAIL_PASSWORD")
 
+        if not sender_email or not sender_password:
+            print("Email credentials missing")
+            return
+
         msg = MIMEText(
             f"Hello {full_name},\n\n"
             "Your account has been successfully created.\n"
@@ -47,60 +51,82 @@ def send_welcome_email(to_email, full_name):
         msg["From"] = sender_email
         msg["To"] = to_email
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        # 🔐 add timeout
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
             server.login(sender_email, sender_password)
             server.send_message(msg)
+
         print(f"Welcome email sent to {to_email}")
+
     except Exception as e:
         print(f"Error sending welcome email: {e}")
 
 def send_reminder_email(to_email):
-    # NOTE: Configure your email credentials here or via environment variables
-    sender_email = os.environ.get("EMAIL")
-    sender_password = os.environ.get("EMAIL_PASSWORD")
-
-    msg = MIMEText(
-        "ครบกำหนด 1 วันหลังจากการบันทึกอาการภูมิแพ้ของคุณ\n\n"
-        "กรุณากลับมาประเมินอาการอีกครั้ง"
-    )
-    msg["Subject"] = "แจ้งเตือนการติดตามอาการ (1 วัน)"
-    msg["From"] = sender_email
-    msg["To"] = to_email
-
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        sender_email = os.environ.get("EMAIL")
+        sender_password = os.environ.get("EMAIL_PASSWORD")
+
+        if not sender_email or not sender_password:
+            print("Email credentials missing")
+            return
+
+        msg = MIMEText(
+            "ครบกำหนด 14 วันหลังจากการบันทึกอาการภูมิแพ้ของคุณ\n\n"
+            "กรุณากลับมาประเมินอาการอีกครั้ง"
+        )
+        msg["Subject"] = "แจ้งเตือนการติดตามอาการ (1 วัน)"
+        msg["From"] = sender_email
+        msg["To"] = to_email
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
             server.login(sender_email, sender_password)
             server.send_message(msg)
-        print(f"Email sent to {to_email}")
+
+        print(f"Reminder email sent to {to_email}")
+
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print(f"Error sending reminder email: {e}")
 
 def check_one_day_passed():
     try:
         conn = get_db()
         cur = conn.cursor()
+
         cur.execute("""
             SELECT s.id, p.email
             FROM symptoms s
             JOIN patient_profiles p ON s.user_id = p.user_id
             WHERE s.created_at IS NOT NULL
-            AND s.created_at + INTERVAL '14 days 9 hours' <= NOW()
+            AND s.created_at + INTERVAL '1 day' <= NOW()
             AND s.email_sent = FALSE
             AND p.email IS NOT NULL
         """)
+
         rows = cur.fetchall()
+
         for row in rows:
             send_reminder_email(row["email"])
-            cur.execute("UPDATE symptoms SET email_sent = TRUE WHERE id = %s", (row["id"],))
-            conn.commit()
+
+        # 🔹 update all at once (faster & safer)
+        if rows:
+            ids = tuple([r["id"] for r in rows])
+            cur.execute(
+                f"UPDATE symptoms SET email_sent = TRUE WHERE id IN %s",
+                (ids,)
+            )
+
+        conn.commit()
         cur.close()
         conn.close()
+
     except Exception as e:
         print(f"Scheduler error: {e}")
 
-scheduler = BackgroundScheduler()
+scheduler = BackgroundScheduler(daemon=True)
 scheduler.add_job(check_one_day_passed, "interval", minutes=60)
-scheduler.start()
+
+if not scheduler.running:
+    scheduler.start()
 
 
 
