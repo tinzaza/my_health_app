@@ -494,7 +494,10 @@ def signup():
                     "trigger_cold_air": bool(request.form.get("trigger_cold_air")),
                     "trigger_pollution": bool(request.form.get("trigger_pollution")),
                     "trigger_stress": bool(request.form.get("trigger_stress")),
-                    "trigger_other": request.form.get("trigger_other"),
+                    "trigger_other": ", ".join(filter(None, [
+                        ", ".join(request.form.getlist("trigger_other_list")),
+                        request.form.get("trigger_other")
+                    ])),
 
                     "smoking_status": request.form.get("smoking_status"),
                     "cigarettes_per_day": (
