@@ -312,16 +312,20 @@ def generate_recommendation(pattern, avg_vas, follow_up, used_steroid_answer):
 
     incs_standard = (
         "ยาสเตียรอยด์พ่นจมูก\n"
-        "– 2 sprays/nostril วันละครั้ง\n"
+        "–1 spray/nostril วันละ 2 ครั้ง กรณี เป็น Budesonide(Rhinocort) , Triamcinolone (Nasacort), Beclomethasone (Beconase) \n"
+        "–2 spray/nostril วันละ 1 ครั้ง กรณีเป็น Fluticasone furoate (Avamys),  Mometasone (Nasonex), Fluticasone proprionate (Flixonase)\n"
     )
 
     incs_high = (
         "ยาสเตียรอยด์พ่นจมูก (เพิ่มขนาดยา)\n"
-        "– 2 sprays/nostril วันละ 2 ครั้ง\n"
+        "ใช้ ยาพ่นจมูก แบบ ผสม Fluticasone propionate / Azelastine (Dymista)\n"
+        "วิธีการใช้ คือ 1 spray/nostril วันละ 2 ครั้ง โดยจะใช้ก็ต่อเมื่อ ถ้าคุณ ใช้ ยาพ่นจมูก steroid 2 กด/ ข้าง วันละ 2 ครั้ง\n"
     )
 
     # ================= STATE 0 =================
     if follow_up == 0:
+        if avg_vas == 0:
+            return "อาการของคุณหายดีแล้ว"
         if pattern == "intermittent" and avg_vas < 5:
             return saline + "เลือกอย่างใดอย่างหนึ่ง\n\n" + oral_ah + "หรือ\n\n" + leuko
 
@@ -334,6 +338,8 @@ def generate_recommendation(pattern, avg_vas, follow_up, used_steroid_answer):
 
     # ================= STATE 1 =================
     if follow_up == 1:
+        if avg_vas == 0:
+            return "อาการของคุณหายดีแล้ว"
         if avg_vas < 5:
             return "อาการดีขึ้น → ลดระดับยา และใช้ยาต่ออีก 2 สัปดาห์"
 
@@ -348,6 +354,8 @@ def generate_recommendation(pattern, avg_vas, follow_up, used_steroid_answer):
 
     # ================= STATE 2 =================
     if follow_up == 2:
+        if avg_vas == 0:
+            return "อาการของคุณหายดีแล้ว"
         if avg_vas < 5:
             return "อาการดีขึ้น → ลดระดับยา และใช้ยาต่ออีก 2 สัปดาห์"
 
@@ -651,6 +659,15 @@ def doctor_stats():
     """)
     latest_rows = cur.fetchall()
 
+    # medicine effect stats (all rows)
+    cur.execute("""
+        SELECT medicine_effect, COUNT(*) as c
+        FROM symptoms
+        WHERE medicine_effect IS NOT NULL
+        GROUP BY medicine_effect
+    """)
+    me_rows = cur.fetchall()
+
     conn.close()
 
     # compute combos and treatment / VAS counts in Python
@@ -699,6 +716,14 @@ def doctor_stats():
             v = 10
         vas_counts[v] += 1
 
+    # Prepare medicine effect data [-3 to +3]
+    me_map = {i: 0 for i in range(-3, 4)}
+    for r in me_rows:
+        val = r["medicine_effect"]
+        if val in me_map:
+            me_map[val] = r["c"]
+    medicine_effect_data = [me_map[i] for i in range(-3, 4)]
+
     combo_counts = [im_mild, im_mod, per_mild, per_mod]
 
     return render_template(
@@ -707,7 +732,8 @@ def doctor_stats():
         genders=genders,
         combo_counts=combo_counts,
         treatments=treatments,
-        vas_counts=vas_counts
+        vas_counts=vas_counts,
+        medicine_effect_data=medicine_effect_data
     )
 
 # ---------- Patient Detail ---------- #
