@@ -3,7 +3,7 @@ import os, json
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime, timedelta
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import Markup
 import smtplib
