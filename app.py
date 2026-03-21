@@ -30,6 +30,56 @@ def get_db():
         sslmode=sslmode
     )
 
+import openpyxl
+from io import BytesIO
+
+@app.route("/export/patients")
+def export_patients():
+    if session.get("role") != "doctor":
+        return redirect(url_for("login"))
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    wb = openpyxl.Workbook()
+    wb.remove(wb.active)  # remove default empty sheet
+
+    tables = {
+        "Users": "SELECT id, username, role, full_name FROM users",
+        "Patient Profiles": "SELECT * FROM patient_profiles",
+        "Symptoms": "SELECT * FROM symptoms",
+        "Patient History": "SELECT * FROM patient_history",
+    }
+
+    for sheet_name, query in tables.items():
+        cur.execute(query)
+        rows = cur.fetchall()
+
+        ws = wb.create_sheet(title=sheet_name)
+
+        if rows:
+            # Write header
+            ws.append(list(rows[0].keys()))
+            # Write data
+            for row in rows:
+                ws.append([
+                    str(v) if not isinstance(v, (int, float, type(None))) else v
+                    for v in row.values()
+                ])
+        else:
+            ws.append(["No data found"])
+
+    conn.close()
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    return Response(
+        output,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment;filename=full_database_export.xlsx"}
+    )
 
 
 # ---------------- Email Scheduler ---------------- #

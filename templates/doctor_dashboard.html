@@ -55,8 +55,15 @@
             </form>
         </div>
     </div>
-    <div class="d-flex justify-content-end mb-3">
-        <a class="btn btn-primary" href="{{ url_for('doctor_stats') }}">View Statistics</a>
+
+    <!-- ACTION BUTTONS -->
+    <div class="d-flex justify-content-end gap-2 mb-3">
+        <a class="btn btn-success" href="{{ url_for('export_patients') }}">
+            ⬇ Export to CSV
+        </a>
+        <a class="btn btn-primary" href="{{ url_for('doctor_stats') }}">
+            View Statistics
+        </a>
     </div>
 
     <!-- PATIENT LIST -->
@@ -77,17 +84,6 @@
                         {% if p.email %}
                         <div class="text-muted small">✉️ {{ p.email }}</div>
                         {% endif %}
-
-                        <div class="mt-2">
-                            <span class="badge badge-record">
-                                {{ p.record_count }} reports
-                            </span>
-                        </div>
-
-
-                        <div class="text-muted small">
-                            📞 {{ p.phone if p.phone else "No phone on record" }}
-                        </div>
 
                         <div class="mt-2">
                             <span class="badge badge-record">
