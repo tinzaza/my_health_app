@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import Markup
 import smtplib
 from email.mime.text import MIMEText
-from apscheduler.schedulers.background import BackgroundScheduler
+
 
 
 
@@ -42,34 +42,130 @@ def export_patients():
     cur = conn.cursor()
 
     wb = openpyxl.Workbook()
-    wb.remove(wb.active)  # remove default empty sheet
+    wb.remove(wb.active)
 
-    tables = {
-        "Users": "SELECT id, username, role, full_name FROM users",
-        "Patient Profiles": "SELECT * FROM patient_profiles",
-        "Symptoms": "SELECT * FROM symptoms",
-        "Patient History": "SELECT * FROM patient_history",
-    }
+    # ── Sheet 1: Users ──
+    cur.execute("SELECT id, username, role, full_name FROM users")
+    rows = cur.fetchall()
+    ws = wb.create_sheet("Users")
+    if rows:
+        ws.append(list(rows[0].keys()))
+        for r in rows:
+            ws.append(list(r.values()))
 
-    for sheet_name, query in tables.items():
-        cur.execute(query)
-        rows = cur.fetchall()
+    # ── Sheet 2: Patient Profiles ──
+    cur.execute("SELECT * FROM patient_profiles")
+    rows = cur.fetchall()
+    ws = wb.create_sheet("Patient Profiles")
+    if rows:
+        ws.append(list(rows[0].keys()))
+        for r in rows:
+            ws.append([str(v) if not isinstance(v, (int, float, type(None))) else v for v in r.values()])
 
-        ws = wb.create_sheet(title=sheet_name)
+    # ── Sheet 3: Patient History ──
+    cur.execute("SELECT * FROM patient_history")
+    rows = cur.fetchall()
+    ws = wb.create_sheet("Patient History")
+    if rows:
+        ws.append(list(rows[0].keys()))
+        for r in rows:
+            ws.append([str(v) if not isinstance(v, (int, float, type(None))) else v for v in r.values()])
 
-        if rows:
-            # Write header
-            ws.append(list(rows[0].keys()))
-            # Write data
-            for row in rows:
-                ws.append([
-                    str(v) if not isinstance(v, (int, float, type(None))) else v
-                    for v in row.values()
-                ])
-        else:
-            ws.append(["No data found"])
-
+    # ── Sheet 4: Symptoms (flattened JSON) ──
+    cur.execute("""
+        SELECT
+            u.full_name        AS "Patient Name",
+            p.email            AS "Email",
+            p.phone            AS "Phone",
+            p.gender           AS "Gender",
+            p.dob              AS "Date of Birth",
+            p.hospital_number  AS "Hospital Number",
+            s.created_at       AS "Record Date",
+            s.tnss             AS "TNSS Score",
+            s.avg_vas          AS "VAS Average",
+            s.pattern          AS "Pattern",
+            s.follow_up        AS "Follow Up Level",
+            s.medicine_effect  AS "Medicine Effect",
+            s.recommendation   AS "Recommendation",
+            s.raw_form         AS "raw_form"
+        FROM users u
+        LEFT JOIN patient_profiles p ON u.id = p.user_id
+        LEFT JOIN symptoms s ON u.id = s.user_id
+        WHERE u.role = 'patient' AND s.id IS NOT NULL
+        ORDER BY u.full_name, s.created_at
+    """)
+    rows = cur.fetchall()
     conn.close()
+
+    ws = wb.create_sheet("Symptoms")
+
+    json_keys = [
+        "vas_score1", "vas_score2", "vas_score3",
+        "symptom_frequency",
+        "Frequently sneeze", "Stuffed nose", "runny nose", "itchy nose",
+        "itchy_eyes", "watery_eyes", "itchy_throat", "sore_throat",
+        "fatigue", "poor_sleep", "daytime_sleepiness", "snoring",
+        "headache", "dry_mouth", "mouth_breathing", "chronic_cough",
+        "phlegm_throat", "loss_of_smell", "other_symptom",
+        "antihistamine_type", "incs_type", "other_medicine_name"
+    ]
+
+    # Friendly display names for JSON keys
+    json_labels = [
+        "VAS Score 1", "VAS Score 2", "VAS Score 3",
+        "Symptom Frequency (days/week)",
+        "Sneeze Score", "Stuffed Nose Score", "Runny Nose Score", "Itchy Nose Score",
+        "Itchy Eyes", "Watery Eyes", "Itchy Throat", "Sore Throat",
+        "Fatigue", "Poor Sleep", "Daytime Sleepiness", "Snoring",
+        "Headache", "Dry Mouth", "Mouth Breathing", "Chronic Cough",
+        "Phlegm in Throat", "Loss of Smell", "Other Symptom",
+        "Antihistamine Used", "Nasal Steroid Used", "Other Medicine"
+    ]
+
+    base_headers = [
+        "Patient Name", "Email", "Phone", "Gender", "Date of Birth",
+        "Hospital Number", "Record Date", "TNSS Score", "VAS Average",
+        "Pattern", "Follow Up Level", "Medicine Effect", "Recommendation"
+    ]
+
+    ws.append(base_headers + json_labels)
+
+    # Style header row
+    from openpyxl.styles import Font, PatternFill, Alignment
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill("solid", fgColor="2E75B6")
+    for cell in ws[1]:
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal="center", wrap_text=True)
+
+    for r in rows:
+        base_values = [
+            r["Patient Name"], r["Email"], r["Phone"], r["Gender"],
+            str(r["Date of Birth"]) if r["Date of Birth"] else "",
+            r["Hospital Number"],
+            str(r["Record Date"]) if r["Record Date"] else "",
+            r["TNSS Score"], r["VAS Average"], r["Pattern"],
+            r["Follow Up Level"], r["Medicine Effect"], r["Recommendation"]
+        ]
+
+        raw = r["raw_form"] or {}
+        if isinstance(raw, str):
+            raw = json.loads(raw)
+
+        json_values = []
+        for key in json_keys:
+            val = raw.get(key, "")
+            if isinstance(val, list):
+                val = ", ".join(val)
+            json_values.append(val)
+
+        ws.append(base_values + json_values)
+
+    # Auto-fit column widths
+    for col in ws.columns:
+        max_len = max((len(str(cell.value)) if cell.value else 0) for cell in col)
+        ws.column_dimensions[col[0].column_letter].width = min(max_len + 4, 40)
 
     output = BytesIO()
     wb.save(output)
@@ -78,108 +174,10 @@ def export_patients():
     return Response(
         output,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment;filename=full_database_export.xlsx"}
+        headers={"Content-Disposition": "attachment;filename=patient_database_export.xlsx"}
     )
 
 
-# ---------------- Email Scheduler ---------------- #
-def send_welcome_email(to_email, full_name):
-    try:
-        sender_email = os.environ.get("EMAIL")
-        sender_password = os.environ.get("EMAIL_PASSWORD")
-
-        if not sender_email or not sender_password:
-            print("Email credentials missing")
-            return
-
-        msg = MIMEText(
-            f"Hello {full_name},\n\n"
-            "Your account has been successfully created.\n"
-            "บัญชีของคุณถูกสร้างเรียบร้อยแล้ว"
-        )
-        msg["Subject"] = "Welcome to Health App"
-        msg["From"] = sender_email
-        msg["To"] = to_email
-
-        # 🔐 add timeout
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
-
-        print(f"Welcome email sent to {to_email}")
-
-    except Exception as e:
-        print(f"Error sending welcome email: {e}")
-
-def send_reminder_email(to_email):
-    try:
-        sender_email = os.environ.get("EMAIL")
-        sender_password = os.environ.get("EMAIL_PASSWORD")
-
-        if not sender_email or not sender_password:
-            print("Email credentials missing")
-            return
-
-        msg = MIMEText(
-            "ครบกำหนด 14 วันหลังจากการบันทึกอาการภูมิแพ้ของคุณ\n\n"
-            "กรุณากลับมาประเมินอาการอีกครั้ง"
-        )
-        msg["Subject"] = "แจ้งเตือนการติดตามอาการ (1 วัน)"
-        msg["From"] = sender_email
-        msg["To"] = to_email
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
-
-        print(f"Reminder email sent to {to_email}")
-
-    except Exception as e:
-        print(f"Error sending reminder email: {e}")
-
-def check_one_day_passed():
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-
-        cur.execute("""
-            SELECT s.id, p.email
-            FROM symptoms s
-            JOIN patient_profiles p ON s.user_id = p.user_id
-            WHERE s.created_at IS NOT NULL
-            AND s.created_at + INTERVAL '1 day' <= NOW()
-            AND s.email_sent = FALSE
-            AND p.email IS NOT NULL
-        """)
-
-        rows = cur.fetchall()
-
-        for row in rows:
-            send_reminder_email(row["email"])
-
-        # 🔹 update all at once (faster & safer)
-        if rows:
-            ids = tuple([r["id"] for r in rows])
-            cur.execute(
-                f"UPDATE symptoms SET email_sent = TRUE WHERE id IN %s",
-                (ids,)
-            )
-
-        conn.commit()
-        cur.close()
-        conn.close()
-
-    except Exception as e:
-        print(f"Scheduler error: {e}")
-
-def run_reminder_job():
-    check_one_day_passed()
-    return "Reminder job executed"
-
-@app.route("/run-reminder-job")
-def run_reminder():
-    run_reminder_job()
-    return "OK"
 
 
 
