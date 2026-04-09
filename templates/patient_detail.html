@@ -300,6 +300,110 @@
                     {% endif %}
                 </div>
 
+                <!-- 🩺 Doctor Medication Notes -->
+                <div class="mt-4">
+                    <div class="section-title d-flex justify-content-between align-items-center">
+                        <span>Doctor Medication Notes</span>
+                        <button class="btn btn-sm btn-outline-primary"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#docNotes{{ loop.index }}">
+                            {% if r.get('doctor_notes_updated_at') %}✏️ Edit Notes{% else %}+ Add Notes{% endif %}
+                        </button>
+                    </div>
+
+                    {% if r.get('doctor_notes_updated_at') %}
+                    <div class="text-muted small mb-2">Last updated: {{ r.doctor_notes_updated_at }}</div>
+                    {% endif %}
+
+                    <div class="collapse" id="docNotes{{ loop.index }}">
+                    <form method="POST" action="{{ url_for('update_doctor_notes', symptom_id=r.id) }}">
+                        <input type="hidden" name="patient_id" value="{{ patient.id }}">
+                        <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6 class="fw-semibold">1st Generation H1-Antihistamines</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6"><label class="form-label small">Chlorpheniramine</label><input name="chlorpheniramine" class="form-control form-control-sm" value="{{ r.get('chlorpheniramine') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Other</label><input name="other_1st_gen" class="form-control form-control-sm" value="{{ r.get('other_1st_gen') or '' }}"></div>
+                            </div>
+                            <h6 class="fw-semibold">2nd Generation H1-Antihistamines</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6"><label class="form-label small">Cetirizine</label><input name="cetirizine" class="form-control form-control-sm" value="{{ r.get('cetirizine') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Levocetirizine</label><input name="levocetirizine" class="form-control form-control-sm" value="{{ r.get('levocetirizine') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Fexofenadine</label><input name="fexofenadine" class="form-control form-control-sm" value="{{ r.get('fexofenadine') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Loratadine</label><input name="loratadine" class="form-control form-control-sm" value="{{ r.get('loratadine') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Desloratadine</label><input name="desloratadine" class="form-control form-control-sm" value="{{ r.get('desloratadine') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Bilastine</label><input name="bilastine" class="form-control form-control-sm" value="{{ r.get('bilastine') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Rupatadine</label><input name="rupatadine" class="form-control form-control-sm" value="{{ r.get('rupatadine') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Other</label><input name="other_2nd_gen" class="form-control form-control-sm" value="{{ r.get('other_2nd_gen') or '' }}"></div>
+                            </div>
+                            <h6 class="fw-semibold">Oral Decongestants</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6"><label class="form-label small">Pseudoephedrine</label><input name="pseudoephedrine" class="form-control form-control-sm" value="{{ r.get('pseudoephedrine') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Other</label><input name="other_oral_decongestant" class="form-control form-control-sm" value="{{ r.get('other_oral_decongestant') or '' }}"></div>
+                            </div>
+                            <h6 class="fw-semibold">Combination Drugs</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6"><label class="form-label small">Triprolidine & Pseudoephedrine</label><input name="triprolidine_pseudo" class="form-control form-control-sm" value="{{ r.get('triprolidine_pseudo') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Chlorpheniramine & Pseudoephedrine</label><input name="chlorphen_pseudo" class="form-control form-control-sm" value="{{ r.get('chlorphen_pseudo') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Loratadine & Pseudoephedrine</label><input name="loratadine_pseudo" class="form-control form-control-sm" value="{{ r.get('loratadine_pseudo') or '' }}"></div>
+                            </div>
+                            <h6 class="fw-semibold">Leukotriene Receptor Antagonists</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6"><label class="form-label small">Montelukast</label><input name="montelukast" class="form-control form-control-sm" value="{{ r.get('montelukast') or '' }}"></div>
+                            </div>
+                            <h6 class="fw-semibold">Immunotherapy</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-12"><label class="form-label small">Immunotherapy</label><input name="immunotherapy_oral" class="form-control form-control-sm" value="{{ r.get('immunotherapy_oral') or '' }}"></div>
+                            </div>
+                            <h6 class="fw-semibold">Patient Advice</h6>
+                            <textarea name="patient_advice" class="form-control form-control-sm mb-3" rows="2">{{ r.get('patient_advice') or '' }}</textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="fw-semibold">Intranasal Corticosteroids</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6"><label class="form-label small">Beclomethasone dipropionate</label><input name="beclomethasone" class="form-control form-control-sm" value="{{ r.get('beclomethasone') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Budesonide</label><input name="budesonide" class="form-control form-control-sm" value="{{ r.get('budesonide') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Fluticasone propionate</label><input name="fluticasone_propionate" class="form-control form-control-sm" value="{{ r.get('fluticasone_propionate') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Fluticasone propionate/Azelastine</label><input name="fluticasone_prop_azelastine" class="form-control form-control-sm" value="{{ r.get('fluticasone_prop_azelastine') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Fluticasone furoate</label><input name="fluticasone_furoate" class="form-control form-control-sm" value="{{ r.get('fluticasone_furoate') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Mometasone furoate</label><input name="mometasone" class="form-control form-control-sm" value="{{ r.get('mometasone') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Triamcinolone acetonide</label><input name="triamcinolone" class="form-control form-control-sm" value="{{ r.get('triamcinolone') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Other</label><input name="other_incs" class="form-control form-control-sm" value="{{ r.get('other_incs') or '' }}"></div>
+                            </div>
+                            <h6 class="fw-semibold">Intranasal Decongestants</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6"><label class="form-label small">Ephedrine</label><input name="ephedrine" class="form-control form-control-sm" value="{{ r.get('ephedrine') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Oxymetazoline HCl</label><input name="oxymetazoline" class="form-control form-control-sm" value="{{ r.get('oxymetazoline') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Other</label><input name="other_intranasal_decongestant" class="form-control form-control-sm" value="{{ r.get('other_intranasal_decongestant') or '' }}"></div>
+                            </div>
+                            <h6 class="fw-semibold">Intranasal Antihistamines</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6"><label class="form-label small">Azelastine</label><input name="azelastine" class="form-control form-control-sm" value="{{ r.get('azelastine') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Levocabastin</label><input name="levocabastin" class="form-control form-control-sm" value="{{ r.get('levocabastin') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Ketotifen</label><input name="ketotifen" class="form-control form-control-sm" value="{{ r.get('ketotifen') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Prednisolone</label><input name="prednisolone" class="form-control form-control-sm" value="{{ r.get('prednisolone') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Nasal Irrigation</label><input name="nasal_irrigation" class="form-control form-control-sm" value="{{ r.get('nasal_irrigation') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Other Medications</label><input name="other_medications" class="form-control form-control-sm" value="{{ r.get('other_medications') or '' }}"></div>
+                            </div>
+                            <h6 class="fw-semibold">Biologics & Immunotherapy</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6"><label class="form-label small">Immunotherapy</label><input name="immunotherapy_inject" class="form-control form-control-sm" value="{{ r.get('immunotherapy_inject') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Anti-IgE antibody</label><input name="anti_ige" class="form-control form-control-sm" value="{{ r.get('anti_ige') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Dupilumab</label><input name="dupilumab" class="form-control form-control-sm" value="{{ r.get('dupilumab') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Benralizumab</label><input name="benralizumab" class="form-control form-control-sm" value="{{ r.get('benralizumab') or '' }}"></div>
+                            </div>
+                            <h6 class="fw-semibold">Next Visit</h6>
+                            <input name="next_visit" class="form-control form-control-sm mb-3" value="{{ r.get('next_visit') or '' }}">
+                        </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 mt-2">💾 Save Doctor Notes</button>
+                    </form>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

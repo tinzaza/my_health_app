@@ -227,6 +227,52 @@ def init_db():
         raw_form JSONB,
         medicine_effect INTEGER,
         email_sent BOOLEAN DEFAULT FALSE
+        # Add doctor medication columns to symptoms table
+        doctor_cols = [
+            ("chlorpheniramine", "TEXT"),
+            ("other_1st_gen", "TEXT"),
+            ("cetirizine", "TEXT"),
+            ("levocetirizine", "TEXT"),
+            ("fexofenadine", "TEXT"),
+            ("loratadine", "TEXT"),
+            ("desloratadine", "TEXT"),
+            ("bilastine", "TEXT"),
+            ("rupatadine", "TEXT"),
+            ("other_2nd_gen", "TEXT"),
+            ("pseudoephedrine", "TEXT"),
+            ("other_oral_decongestant", "TEXT"),
+            ("triprolidine_pseudo", "TEXT"),
+            ("chlorphen_pseudo", "TEXT"),
+            ("loratadine_pseudo", "TEXT"),
+            ("montelukast", "TEXT"),
+            ("immunotherapy_oral", "TEXT"),
+            ("beclomethasone", "TEXT"),
+            ("budesonide", "TEXT"),
+            ("fluticasone_propionate", "TEXT"),
+            ("fluticasone_prop_azelastine", "TEXT"),
+            ("fluticasone_furoate", "TEXT"),
+            ("mometasone", "TEXT"),
+            ("triamcinolone", "TEXT"),
+            ("other_incs", "TEXT"),
+            ("ephedrine", "TEXT"),
+            ("oxymetazoline", "TEXT"),
+            ("other_intranasal_decongestant", "TEXT"),
+            ("azelastine", "TEXT"),
+            ("levocabastin", "TEXT"),
+            ("ketotifen", "TEXT"),
+            ("prednisolone", "TEXT"),
+            ("nasal_irrigation", "TEXT"),
+            ("other_medications", "TEXT"),
+            ("immunotherapy_inject", "TEXT"),
+            ("anti_ige", "TEXT"),
+            ("dupilumab", "TEXT"),
+            ("benralizumab", "TEXT"),
+            ("patient_advice", "TEXT"),
+            ("next_visit", "TEXT"),
+            ("doctor_notes_updated_at", "TIMESTAMP"),
+        ]
+        for col_name, col_type in doctor_cols:
+            cur.execute(f"ALTER TABLE symptoms ADD COLUMN IF NOT EXISTS {col_name} {col_type}")
     )
     """)
 
@@ -432,6 +478,44 @@ def index():
 def welcome():
     return render_template("welcome.html")
 
+## ---------- Update Doctor Notes ---------- #
+@app.route("/update_doctor_notes/<int:symptom_id>", methods=["POST"])
+def update_doctor_notes(symptom_id):
+    if session.get("role") != "doctor":
+        return redirect(url_for("login"))
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    fields = [
+        "chlorpheniramine", "other_1st_gen", "cetirizine", "levocetirizine",
+        "fexofenadine", "loratadine", "desloratadine", "bilastine", "rupatadine",
+        "other_2nd_gen", "pseudoephedrine", "other_oral_decongestant",
+        "triprolidine_pseudo", "chlorphen_pseudo", "loratadine_pseudo",
+        "montelukast", "immunotherapy_oral", "beclomethasone", "budesonide",
+        "fluticasone_propionate", "fluticasone_prop_azelastine", "fluticasone_furoate",
+        "mometasone", "triamcinolone", "other_incs", "ephedrine", "oxymetazoline",
+        "other_intranasal_decongestant", "azelastine", "levocabastin", "ketotifen",
+        "prednisolone", "nasal_irrigation", "other_medications", "immunotherapy_inject",
+        "anti_ige", "dupilumab", "benralizumab", "patient_advice", "next_visit"
+    ]
+
+    set_clause = ", ".join([f"{f} = %s" for f in fields])
+    values = [request.form.get(f, "") for f in fields]
+    values.append(datetime.utcnow())
+    values.append(symptom_id)
+
+    cur.execute(
+        f"UPDATE symptoms SET {set_clause}, doctor_notes_updated_at = %s WHERE id = %s",
+        values
+    )
+    conn.commit()
+    conn.close()
+
+    # Get patient_id to redirect back
+    patient_id = request.form.get("patient_id")
+    flash("Doctor notes saved successfully.", "success")
+    return redirect(url_for("patient_detail", patient_id=patient_id))
 # ---------- Login ---------- #
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -862,7 +946,50 @@ def patient_detail(patient_id):
         "avg_vas": r["avg_vas"],
         "follow_up": r["follow_up"],
         "recommendation": r["recommendation"],
-        "data": r["raw_form"] if r["raw_form"] else {}
+        "data": r["raw_form"] if r["raw_form"] else {},
+        "id": r["id"],
+        # doctor notes
+        "chlorpheniramine": r.get("chlorpheniramine"),
+        "other_1st_gen": r.get("other_1st_gen"),
+        "cetirizine": r.get("cetirizine"),
+        "levocetirizine": r.get("levocetirizine"),
+        "fexofenadine": r.get("fexofenadine"),
+        "loratadine": r.get("loratadine"),
+        "desloratadine": r.get("desloratadine"),
+        "bilastine": r.get("bilastine"),
+        "rupatadine": r.get("rupatadine"),
+        "other_2nd_gen": r.get("other_2nd_gen"),
+        "pseudoephedrine": r.get("pseudoephedrine"),
+        "other_oral_decongestant": r.get("other_oral_decongestant"),
+        "triprolidine_pseudo": r.get("triprolidine_pseudo"),
+        "chlorphen_pseudo": r.get("chlorphen_pseudo"),
+        "loratadine_pseudo": r.get("loratadine_pseudo"),
+        "montelukast": r.get("montelukast"),
+        "immunotherapy_oral": r.get("immunotherapy_oral"),
+        "beclomethasone": r.get("beclomethasone"),
+        "budesonide": r.get("budesonide"),
+        "fluticasone_propionate": r.get("fluticasone_propionate"),
+        "fluticasone_prop_azelastine": r.get("fluticasone_prop_azelastine"),
+        "fluticasone_furoate": r.get("fluticasone_furoate"),
+        "mometasone": r.get("mometasone"),
+        "triamcinolone": r.get("triamcinolone"),
+        "other_incs": r.get("other_incs"),
+        "ephedrine": r.get("ephedrine"),
+        "oxymetazoline": r.get("oxymetazoline"),
+        "other_intranasal_decongestant": r.get("other_intranasal_decongestant"),
+        "azelastine": r.get("azelastine"),
+        "levocabastin": r.get("levocabastin"),
+        "ketotifen": r.get("ketotifen"),
+        "prednisolone": r.get("prednisolone"),
+        "nasal_irrigation": r.get("nasal_irrigation"),
+        "other_medications": r.get("other_medications"),
+        "immunotherapy_inject": r.get("immunotherapy_inject"),
+        "anti_ige": r.get("anti_ige"),
+        "dupilumab": r.get("dupilumab"),
+        "benralizumab": r.get("benralizumab"),
+        "patient_advice": r.get("patient_advice"),
+        "next_visit": r.get("next_visit"),
+        "doctor_notes_updated_at": r.get("doctor_notes_updated_at"),
     } for r in rows]
 
     return render_template(
