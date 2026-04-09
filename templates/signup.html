@@ -101,13 +101,13 @@
             <div class="row g-3 patient-field">
 
                 <div class="col-md-6">
-                    <label>Email <span class="required-star">*</span></label>
-                    <input name="email" type="email" class="form-control">
+                    <label>Email <span class="text-muted small">(required if no phone)</span></label>
+                    <input name="email" type="email" class="form-control" id="emailInput">
                 </div>
 
                 <div class="col-md-6">
-                    <label>Phone Number <span class="required-star">*</span></label>
-                    <input name="phone" class="form-control">
+                    <label>Phone Number <span class="text-muted small">(required if no email)</span></label>
+                    <input name="phone" class="form-control" id="phoneInput">
                 </div>
 
                 <div class="col-md-6">
@@ -657,14 +657,111 @@ function refreshRoleFields() {
     }
 }
 
+function showError(inputEl, message) {
+    inputEl.classList.add("is-invalid");
+    let feedback = inputEl.nextElementSibling;
+    if (!feedback || !feedback.classList.contains("invalid-feedback")) {
+        feedback = document.createElement("div");
+        feedback.classList.add("invalid-feedback");
+        inputEl.parentNode.appendChild(feedback);
+    }
+    feedback.textContent = message;
+}
+
+function clearError(inputEl) {
+    inputEl.classList.remove("is-invalid");
+    inputEl.classList.add("is-valid");
+}
+
 function goStep2() {
+    let valid = true;
+
+    // Clear previous errors
+    document.querySelectorAll(".is-invalid").forEach(el => {
+        el.classList.remove("is-invalid");
+        el.classList.remove("is-valid");
+    });
+
+    // Username
+    const username = document.querySelector("[name='username']");
+    if (!username.value.trim()) {
+        showError(username, "Username is required.");
+        valid = false;
+    } else clearError(username);
+
+    // Password
+    const password = document.querySelector("[name='password']");
+    if (!password.value.trim()) {
+        showError(password, "Password is required.");
+        valid = false;
+    } else clearError(password);
+
+    // Full name
+    const fullName = document.querySelector("[name='full_name']");
+    if (!fullName.value.trim()) {
+        showError(fullName, "Full name is required.");
+        valid = false;
+    } else clearError(fullName);
+
+    // Role
+    const role = document.getElementById("roleSelect");
+    if (!role.value) {
+        showError(role, "Please select a role.");
+        valid = false;
+    } else clearError(role);
+
+    // Email OR Phone (at least one required for patients)
+    if (role.value === "patient") {
+        const email = document.getElementById("emailInput");
+        const phone = document.getElementById("phoneInput");
+
+        if (!email.value.trim() && !phone.value.trim()) {
+            showError(email, "Please provide at least an email or phone number.");
+            showError(phone, "Please provide at least an email or phone number.");
+            valid = false;
+        } else {
+            clearError(email);
+            clearError(phone);
+        }
+
+        // DOB
+        const dob = document.querySelector("[name='dob']");
+        if (!dob.value) {
+            showError(dob, "Date of birth is required.");
+            valid = false;
+        } else clearError(dob);
+
+        // Gender
+        const gender = document.querySelector("[name='gender']");
+        if (!gender.value) {
+            showError(gender, "Please select a gender.");
+            valid = false;
+        } else clearError(gender);
+
+        // Consent
+        const consent = document.getElementById("consent");
+        if (!consent.checked) {
+            showError(consent, "You must provide consent to continue.");
+            valid = false;
+        } else clearError(consent);
+    }
+
+    if (!valid) {
+        // Scroll to first error
+        const firstError = document.querySelector(".is-invalid");
+        if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+    }
+
     document.getElementById("step1").classList.add("d-none");
     document.getElementById("step2").classList.remove("d-none");
+    window.scrollTo(0, 0);
 }
 
 function goStep1() {
     document.getElementById("step2").classList.add("d-none");
     document.getElementById("step1").classList.remove("d-none");
+    window.scrollTo(0, 0);
 }
 
 document.getElementById("roleSelect").addEventListener("change", refreshRoleFields);
