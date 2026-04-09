@@ -72,6 +72,7 @@ def export_patients():
             ws.append([str(v) if not isinstance(v, (int, float, type(None))) else v for v in r.values()])
 
     # ── Sheet 4: Symptoms (flattened JSON) ──
+    # ── Sheet 4: Symptoms (flattened JSON) ──
     cur.execute("""
         SELECT
             u.full_name        AS "Patient Name",
@@ -87,7 +88,22 @@ def export_patients():
             s.follow_up        AS "Follow Up Level",
             s.medicine_effect  AS "Medicine Effect",
             s.recommendation   AS "Recommendation",
-            s.raw_form         AS "raw_form"
+            s.raw_form         AS "raw_form",
+            s.doctor_notes_updated_at AS "Doctor Notes Updated",
+            s.chlorpheniramine, s.other_1st_gen,
+            s.cetirizine, s.levocetirizine, s.fexofenadine,
+            s.loratadine, s.desloratadine, s.bilastine, s.rupatadine, s.other_2nd_gen,
+            s.pseudoephedrine, s.other_oral_decongestant,
+            s.triprolidine_pseudo, s.chlorphen_pseudo, s.loratadine_pseudo,
+            s.montelukast, s.immunotherapy_oral,
+            s.beclomethasone, s.budesonide, s.fluticasone_propionate,
+            s.fluticasone_prop_azelastine, s.fluticasone_furoate,
+            s.mometasone, s.triamcinolone, s.other_incs,
+            s.ephedrine, s.oxymetazoline, s.other_intranasal_decongestant,
+            s.azelastine, s.levocabastin, s.ketotifen, s.prednisolone,
+            s.nasal_irrigation, s.other_medications,
+            s.immunotherapy_inject, s.anti_ige, s.dupilumab, s.benralizumab,
+            s.patient_advice, s.next_visit
         FROM users u
         LEFT JOIN patient_profiles p ON u.id = p.user_id
         LEFT JOIN symptoms s ON u.id = s.user_id
@@ -122,13 +138,31 @@ def export_patients():
         "Antihistamine Used", "Nasal Steroid Used", "Other Medicine"
     ]
 
+    doctor_headers = [
+        "Doctor Notes Updated",
+        "Chlorpheniramine", "Other 1st Gen",
+        "Cetirizine", "Levocetirizine", "Fexofenadine",
+        "Loratadine", "Desloratadine", "Bilastine", "Rupatadine", "Other 2nd Gen",
+        "Pseudoephedrine", "Other Oral Decongestant",
+        "Triprolidine+Pseudoephedrine", "Chlorpheniramine+Pseudoephedrine", "Loratadine+Pseudoephedrine",
+        "Montelukast", "Immunotherapy (Oral)",
+        "Beclomethasone", "Budesonide", "Fluticasone Propionate",
+        "Fluticasone Prop/Azelastine", "Fluticasone Furoate",
+        "Mometasone", "Triamcinolone", "Other INCS",
+        "Ephedrine", "Oxymetazoline", "Other Intranasal Decongestant",
+        "Azelastine", "Levocabastin", "Ketotifen", "Prednisolone",
+        "Nasal Irrigation", "Other Medications",
+        "Immunotherapy (Inject)", "Anti-IgE", "Dupilumab", "Benralizumab",
+        "Patient Advice", "Next Visit"
+    ]
+
     base_headers = [
         "Patient Name", "Email", "Phone", "Gender", "Date of Birth",
         "Hospital Number", "Record Date", "TNSS Score", "VAS Average",
         "Pattern", "Follow Up Level", "Medicine Effect", "Recommendation"
     ]
 
-    ws.append(base_headers + json_labels)
+    ws.append(base_headers + json_labels + doctor_headers)
 
     # Style header row
     from openpyxl.styles import Font, PatternFill, Alignment
@@ -160,7 +194,27 @@ def export_patients():
                 val = ", ".join(val)
             json_values.append(val)
 
-        ws.append(base_values + json_values)
+        doctor_values = [
+            str(r.get("Doctor Notes Updated")) if r.get("Doctor Notes Updated") else "",
+            r.get("chlorpheniramine") or "", r.get("other_1st_gen") or "",
+            r.get("cetirizine") or "", r.get("levocetirizine") or "", r.get("fexofenadine") or "",
+            r.get("loratadine") or "", r.get("desloratadine") or "", r.get("bilastine") or "",
+            r.get("rupatadine") or "", r.get("other_2nd_gen") or "",
+            r.get("pseudoephedrine") or "", r.get("other_oral_decongestant") or "",
+            r.get("triprolidine_pseudo") or "", r.get("chlorphen_pseudo") or "", r.get("loratadine_pseudo") or "",
+            r.get("montelukast") or "", r.get("immunotherapy_oral") or "",
+            r.get("beclomethasone") or "", r.get("budesonide") or "", r.get("fluticasone_propionate") or "",
+            r.get("fluticasone_prop_azelastine") or "", r.get("fluticasone_furoate") or "",
+            r.get("mometasone") or "", r.get("triamcinolone") or "", r.get("other_incs") or "",
+            r.get("ephedrine") or "", r.get("oxymetazoline") or "", r.get("other_intranasal_decongestant") or "",
+            r.get("azelastine") or "", r.get("levocabastin") or "", r.get("ketotifen") or "",
+            r.get("prednisolone") or "", r.get("nasal_irrigation") or "", r.get("other_medications") or "",
+            r.get("immunotherapy_inject") or "", r.get("anti_ige") or "",
+            r.get("dupilumab") or "", r.get("benralizumab") or "",
+            r.get("patient_advice") or "", r.get("next_visit") or "",
+        ]
+
+        ws.append(base_values + json_values + doctor_values)
 
     # Auto-fit column widths
     for col in ws.columns:
