@@ -213,6 +213,7 @@ def init_db():
     )
     """)
 
+
     # SYMPTOMS
     cur.execute("""
     CREATE TABLE IF NOT EXISTS symptoms (
@@ -227,55 +228,55 @@ def init_db():
         raw_form JSONB,
         medicine_effect INTEGER,
         email_sent BOOLEAN DEFAULT FALSE
-        # Add doctor medication columns to symptoms table
-        doctor_cols = [
-            ("chlorpheniramine", "TEXT"),
-            ("other_1st_gen", "TEXT"),
-            ("cetirizine", "TEXT"),
-            ("levocetirizine", "TEXT"),
-            ("fexofenadine", "TEXT"),
-            ("loratadine", "TEXT"),
-            ("desloratadine", "TEXT"),
-            ("bilastine", "TEXT"),
-            ("rupatadine", "TEXT"),
-            ("other_2nd_gen", "TEXT"),
-            ("pseudoephedrine", "TEXT"),
-            ("other_oral_decongestant", "TEXT"),
-            ("triprolidine_pseudo", "TEXT"),
-            ("chlorphen_pseudo", "TEXT"),
-            ("loratadine_pseudo", "TEXT"),
-            ("montelukast", "TEXT"),
-            ("immunotherapy_oral", "TEXT"),
-            ("beclomethasone", "TEXT"),
-            ("budesonide", "TEXT"),
-            ("fluticasone_propionate", "TEXT"),
-            ("fluticasone_prop_azelastine", "TEXT"),
-            ("fluticasone_furoate", "TEXT"),
-            ("mometasone", "TEXT"),
-            ("triamcinolone", "TEXT"),
-            ("other_incs", "TEXT"),
-            ("ephedrine", "TEXT"),
-            ("oxymetazoline", "TEXT"),
-            ("other_intranasal_decongestant", "TEXT"),
-            ("azelastine", "TEXT"),
-            ("levocabastin", "TEXT"),
-            ("ketotifen", "TEXT"),
-            ("prednisolone", "TEXT"),
-            ("nasal_irrigation", "TEXT"),
-            ("other_medications", "TEXT"),
-            ("immunotherapy_inject", "TEXT"),
-            ("anti_ige", "TEXT"),
-            ("dupilumab", "TEXT"),
-            ("benralizumab", "TEXT"),
-            ("patient_advice", "TEXT"),
-            ("next_visit", "TEXT"),
-            ("doctor_notes_updated_at", "TIMESTAMP"),
-        ]
-        for col_name, col_type in doctor_cols:
-            cur.execute(f"ALTER TABLE symptoms ADD COLUMN IF NOT EXISTS {col_name} {col_type}")
     )
     """)
 
+    # Add doctor medication columns to symptoms table
+    doctor_cols = [
+        ("chlorpheniramine", "TEXT"),
+        ("other_1st_gen", "TEXT"),
+        ("cetirizine", "TEXT"),
+        ("levocetirizine", "TEXT"),
+        ("fexofenadine", "TEXT"),
+        ("loratadine", "TEXT"),
+        ("desloratadine", "TEXT"),
+        ("bilastine", "TEXT"),
+        ("rupatadine", "TEXT"),
+        ("other_2nd_gen", "TEXT"),
+        ("pseudoephedrine", "TEXT"),
+        ("other_oral_decongestant", "TEXT"),
+        ("triprolidine_pseudo", "TEXT"),
+        ("chlorphen_pseudo", "TEXT"),
+        ("loratadine_pseudo", "TEXT"),
+        ("montelukast", "TEXT"),
+        ("immunotherapy_oral", "TEXT"),
+        ("beclomethasone", "TEXT"),
+        ("budesonide", "TEXT"),
+        ("fluticasone_propionate", "TEXT"),
+        ("fluticasone_prop_azelastine", "TEXT"),
+        ("fluticasone_furoate", "TEXT"),
+        ("mometasone", "TEXT"),
+        ("triamcinolone", "TEXT"),
+        ("other_incs", "TEXT"),
+        ("ephedrine", "TEXT"),
+        ("oxymetazoline", "TEXT"),
+        ("other_intranasal_decongestant", "TEXT"),
+        ("azelastine", "TEXT"),
+        ("levocabastin", "TEXT"),
+        ("ketotifen", "TEXT"),
+        ("prednisolone", "TEXT"),
+        ("nasal_irrigation", "TEXT"),
+        ("other_medications", "TEXT"),
+        ("immunotherapy_inject", "TEXT"),
+        ("anti_ige", "TEXT"),
+        ("dupilumab", "TEXT"),
+        ("benralizumab", "TEXT"),
+        ("patient_advice", "TEXT"),
+        ("next_visit", "TEXT"),
+        ("doctor_notes_updated_at", "TIMESTAMP"),
+    ]
+    for col_name, col_type in doctor_cols:
+        cur.execute(f"ALTER TABLE symptoms ADD COLUMN IF NOT EXISTS {col_name} {col_type}")
     # PATIENT HISTORY
     cur.execute("""
     CREATE TABLE IF NOT EXISTS patient_history (
