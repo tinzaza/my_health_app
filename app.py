@@ -646,51 +646,57 @@ def login():
 def signup():
     if request.method == "POST":
         print("SIGNUP FORM:", dict(request.form))
+
+        # =============================
+        # 🟢 GET DATA FIRST (NO DB YET)
+        # =============================
+        role = request.form.get("role")
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        full_name = request.form.get("full_name", "").strip()
+        email = request.form.get("email", "").strip()
+        phone = request.form.get("phone", "").strip()
+
+        # =============================
+        # 🔴 VALIDATION
+        # =============================
+        if not username or not password or not full_name:
+            flash("Please fill in all required fields.", "warning")
+            return redirect(url_for("signup"))
+
+        if len(password) < 6:
+            flash("Password must be at least 6 characters.", "warning")
+            return redirect(url_for("signup"))
+
+        if role == "patient" and not email and not phone:
+            flash("Please provide at least email or phone.", "warning")
+            return redirect(url_for("signup"))
+
+        if role == "doctor" and request.form.get("doctor_code") != "SECRET123":
+            flash("Invalid doctor signup code.", "danger")
+            return redirect(url_for("signup"))
+
+        # =============================
+        # 🔵 CONNECT DB
+        # =============================
         conn = get_db()
         cur = conn.cursor()
 
         try:
-            role = request.form["role"]
-
-            username = request.form.get("username", "").strip()
-            password = request.form.get("password", "")
-            full_name = request.form.get("full_name", "").strip()
-            email = request.form.get("email", "").strip()
-            phone = request.form.get("phone", "").strip()
-
-            # =============================
-            # 🔴 REQUIRED FIELD CHECK
-            # =============================
-            if not username or not password or not full_name:
-                flash("Please fill in all required fields.", "warning")
-                return redirect(url_for("signup"))
-
-            if len(password) < 6:
-                flash("Password must be at least 6 characters.", "warning")
-                return redirect(url_for("signup"))
-
-            if role == "patient" and not email and not phone:
-                flash("Please provide at least email or phone.", "warning")
-                return redirect(url_for("signup"))
-
             # =============================
             # 🔴 DUPLICATE CHECKS
             # =============================
-
-            # username
             cur.execute("SELECT id FROM users WHERE username = %s", (username,))
             if cur.fetchone():
                 flash("Username already exists.", "danger")
                 return redirect(url_for("signup"))
 
-            # email
             if role == "patient" and email:
                 cur.execute("SELECT id FROM patient_profiles WHERE email = %s", (email,))
                 if cur.fetchone():
                     flash("Email already registered.", "danger")
                     return redirect(url_for("signup"))
 
-            # phone
             if role == "patient" and phone:
                 cur.execute("SELECT id FROM patient_profiles WHERE phone = %s", (phone,))
                 if cur.fetchone():
@@ -698,14 +704,8 @@ def signup():
                     return redirect(url_for("signup"))
 
             # =============================
-            # 🟢 DOCTOR CODE CHECK
+            # 🟢 CREATE USER
             # =============================
-            if role == "doctor":
-                if request.form.get("doctor_code") != "SECRET123":
-                    flash("Invalid doctor signup code.", "danger")
-                    return redirect(url_for("signup"))
-
-            # 1️⃣ CREATE USER (RETURNING id is REQUIRED for PostgreSQL)
             cur.execute(
                 """
                 INSERT INTO users (username, password, role, full_name)
@@ -713,15 +713,18 @@ def signup():
                 RETURNING id
                 """,
                 (
-                    request.form["username"],
-                    generate_password_hash(request.form["password"]),
+                    username,
+                    generate_password_hash(password),
                     role,
-                    request.form["full_name"]
+                    full_name
                 )
             )
+
             user_id = cur.fetchone()["id"]
 
-            # 2️⃣ PATIENT PROFILE
+            # =============================
+            # 🟢 PATIENT PROFILE
+            # =============================
             if role == "patient":
                 cur.execute(
                     """
@@ -732,8 +735,8 @@ def signup():
                     """,
                     (
                         user_id,
-                        request.form.get("email"),
-                        request.form.get("phone"),
+                        email,
+                        phone,
                         request.form.get("address"),
                         request.form.get("dob"),
                         request.form.get("gender"),
@@ -743,37 +746,33 @@ def signup():
                     )
                 )
 
-                # 3️⃣ PATIENT HISTORY
+                # =============================
+                # 🟢 PATIENT HISTORY
+                # =============================
                 history_data = {
                     "symptom_year_pattern": request.form.get("symptom_year_pattern"),
-
                     "season_summer": bool(request.form.get("season_summer")),
                     "season_rainy": bool(request.form.get("season_rainy")),
                     "season_winter": bool(request.form.get("season_winter")),
                     "season_summer_rainy": bool(request.form.get("season_summer_rainy")),
                     "season_rainy_winter": bool(request.form.get("season_rainy_winter")),
                     "season_uncertain": bool(request.form.get("season_uncertain")),
-
                     "duration_per_year": request.form.get("duration_per_year"),
                     "weekly_frequency": request.form.get("weekly_frequency"),
-
                     "time_6_12": bool(request.form.get("time_6_12")),
                     "time_12_18": bool(request.form.get("time_12_18")),
                     "time_18_24": bool(request.form.get("time_18_24")),
                     "time_24_6": bool(request.form.get("time_24_6")),
                     "time_all_day": bool(request.form.get("time_all_day")),
                     "time_uncertain": bool(request.form.get("time_uncertain")),
-
                     "living_area": request.form.get("living_area"),
                     "near_road": request.form.get("near_road") == "yes",
                     "housing_type": request.form.get("housing_type"),
                     "air_conditioner": request.form.get("air_conditioner") == "yes",
-
                     "pet_cat": bool(request.form.get("pet_cat")),
                     "pet_dog": bool(request.form.get("pet_dog")),
                     "pet_bird": bool(request.form.get("pet_bird")),
                     "pet_other": request.form.get("pet_other"),
-
                     "trigger_dust": bool(request.form.get("trigger_dust")),
                     "trigger_pollen": bool(request.form.get("trigger_pollen")),
                     "trigger_animal": bool(request.form.get("trigger_animal")),
@@ -785,49 +784,30 @@ def signup():
                         ", ".join(request.form.getlist("trigger_other_list")),
                         request.form.get("trigger_other")
                     ])),
-
                     "smoking_status": request.form.get("smoking_status"),
-                    "cigarettes_per_day": (
-                        int(request.form.get("cigarettes_per_day"))
-                        if request.form.get("cigarettes_per_day")
-                        else None
-                    ),
-                    "quit_years": (
-                        int(request.form.get("quit_years"))
-                        if request.form.get("quit_years")
-                        else None
-                    ),
-
+                    "cigarettes_per_day": int(request.form.get("cigarettes_per_day")) if request.form.get("cigarettes_per_day") else None,
+                    "quit_years": int(request.form.get("quit_years")) if request.form.get("quit_years") else None,
                     "secondhand_smoke": request.form.get("secondhand_smoke"),
-
                     "drug_allergy": request.form.get("drug_allergy"),
                     "drug_allergy_name": request.form.get("drug_allergy_name"),
                     "drug_allergy_symptom": request.form.get("drug_allergy_symptom"),
-
                     "food_allergy": request.form.get("food_allergy"),
                     "food_allergy_name": request.form.get("food_allergy_name"),
                     "food_allergy_symptom": request.form.get("food_allergy_symptom"),
-
                     "natural_allergy": request.form.get("natural_allergy"),
                     "natural_allergy_symptom": request.form.get("natural_allergy_symptom"),
-
                     "family_asthma": ",".join(request.form.getlist("family_asthma")),
                     "family_rhinitis": ",".join(request.form.getlist("family_rhinitis")),
                     "family_allergic_conjunctivitis": ",".join(request.form.getlist("family_allergic_conjunctivitis")),
                     "family_atopic_dermatitis": ",".join(request.form.getlist("family_atopic_dermatitis")),
-
                     "work_performance": request.form.get("work_performance"),
                     "physical_activity_problem": request.form.get("physical_activity_problem"),
                     "stairs_problem": request.form.get("stairs_problem"),
-
                     "work_less_physical": request.form.get("work_less_physical"),
                     "work_careful_physical": request.form.get("work_careful_physical"),
-
                     "work_less_emotional": request.form.get("work_less_emotional"),
                     "work_careless_emotional": request.form.get("work_careless_emotional"),
-
                     "daily_activity_limit": request.form.get("daily_activity_limit"),
-
                     "feel_calm": request.form.get("feel_calm"),
                     "feel_energetic": request.form.get("feel_energetic"),
                     "feel_sad": request.form.get("feel_sad"),
@@ -847,18 +827,7 @@ def signup():
 
             conn.commit()
 
-            # Send welcome email
-            if role == "patient" and request.form.get("email"):
-                try:
-                    send_welcome_email(request.form.get("email"), request.form["full_name"])
-                except Exception as e:
-                    print(f"Error sending welcome email: {e}")
-
-            flash(
-                "สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบและกรอกแบบประเมินอาการ\n\n"
-                "Signup successful. Please log in and complete the assessment form.",
-                "success"
-            )
+            flash("Signup successful! Please login.", "success")
             return redirect(url_for("login"))
 
         except Exception as e:
