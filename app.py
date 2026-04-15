@@ -33,6 +33,46 @@ def get_db():
 import openpyxl
 from io import BytesIO
 
+@app.route("/forgot_password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "POST":
+        username = request.form.get("username")
+        dob = request.form.get("dob")
+        new_password = request.form.get("new_password")
+
+        conn = get_db()
+        cur = conn.cursor()
+
+        # get user + dob
+        cur.execute("""
+            SELECT u.id, p.dob
+            FROM users u
+            LEFT JOIN patient_profiles p ON u.id = p.user_id
+            WHERE u.username = %s AND u.role = 'patient'
+        """, (username,))
+        user = cur.fetchone()
+
+        if user and str(user["dob"]) == dob:
+            # update password
+            hashed_pw = generate_password_hash(new_password)
+
+            cur.execute("""
+                UPDATE users
+                SET password = %s
+                WHERE id = %s
+            """, (hashed_pw, user["id"]))
+
+            conn.commit()
+            conn.close()
+
+            flash("Password reset successful. Please login.", "success")
+            return redirect(url_for("login"))
+
+        conn.close()
+        flash("Invalid username or birth date.", "danger")
+
+    return render_template("forgot_password.html")
+
 @app.route("/export/patients")
 def export_patients():
     if session.get("role") != "doctor":
