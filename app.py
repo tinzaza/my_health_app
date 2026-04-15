@@ -36,24 +36,26 @@ from io import BytesIO
 @app.route("/forgot_password", methods=["GET", "POST"])
 def forgot_password():
     if request.method == "POST":
-        username = request.form.get("username")
+        identifier = request.form.get("identifier")  # username/email/phone
         dob = request.form.get("dob")
         new_password = request.form.get("new_password")
 
         conn = get_db()
         cur = conn.cursor()
 
-        # get user + dob
+        # 🔍 search by username OR email OR phone
         cur.execute("""
             SELECT u.id, p.dob
             FROM users u
             LEFT JOIN patient_profiles p ON u.id = p.user_id
-            WHERE u.username = %s AND u.role = 'patient'
-        """, (username,))
+            WHERE (u.username = %s OR p.email = %s OR p.phone = %s)
+              AND u.role = 'patient'
+            LIMIT 1
+        """, (identifier, identifier, identifier))
+
         user = cur.fetchone()
 
-        if user and str(user["dob"]) == dob:
-            # update password
+        if user and user["dob"] and str(user["dob"]) == dob:
             hashed_pw = generate_password_hash(new_password)
 
             cur.execute("""
@@ -69,7 +71,7 @@ def forgot_password():
             return redirect(url_for("login"))
 
         conn.close()
-        flash("Invalid username or birth date.", "danger")
+        flash("Invalid details. Please try again.", "danger")
 
     return render_template("forgot_password.html")
 
