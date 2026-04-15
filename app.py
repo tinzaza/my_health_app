@@ -325,7 +325,7 @@ def init_db():
         ("anti_ige", "TEXT"),
         ("dupilumab", "TEXT"),
         ("benralizumab", "TEXT"),
-        ("patient_advice", "TEXT")
+        ("patient_advice", "TEXT"),
         ("olopatadine_mometasone", "TEXT"),
         ("mepolizumab", "TEXT"),
         ("next_visit", "TEXT"),
