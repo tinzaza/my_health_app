@@ -652,10 +652,57 @@ def signup():
         try:
             role = request.form["role"]
 
-            # 0️⃣ CHECK DOCTOR CODE
+            username = request.form.get("username", "").strip()
+            password = request.form.get("password", "")
+            full_name = request.form.get("full_name", "").strip()
+            email = request.form.get("email", "").strip()
+            phone = request.form.get("phone", "").strip()
+
+            # =============================
+            # 🔴 REQUIRED FIELD CHECK
+            # =============================
+            if not username or not password or not full_name:
+                flash("Please fill in all required fields.", "warning")
+                return redirect(url_for("signup"))
+
+            if len(password) < 6:
+                flash("Password must be at least 6 characters.", "warning")
+                return redirect(url_for("signup"))
+
+            if role == "patient" and not email and not phone:
+                flash("Please provide at least email or phone.", "warning")
+                return redirect(url_for("signup"))
+
+            # =============================
+            # 🔴 DUPLICATE CHECKS
+            # =============================
+
+            # username
+            cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+            if cur.fetchone():
+                flash("Username already exists.", "danger")
+                return redirect(url_for("signup"))
+
+            # email
+            if role == "patient" and email:
+                cur.execute("SELECT id FROM patient_profiles WHERE email = %s", (email,))
+                if cur.fetchone():
+                    flash("Email already registered.", "danger")
+                    return redirect(url_for("signup"))
+
+            # phone
+            if role == "patient" and phone:
+                cur.execute("SELECT id FROM patient_profiles WHERE phone = %s", (phone,))
+                if cur.fetchone():
+                    flash("Phone number already registered.", "danger")
+                    return redirect(url_for("signup"))
+
+            # =============================
+            # 🟢 DOCTOR CODE CHECK
+            # =============================
             if role == "doctor":
                 if request.form.get("doctor_code") != "SECRET123":
-                    flash("Invalid doctor signup code", "danger")
+                    flash("Invalid doctor signup code.", "danger")
                     return redirect(url_for("signup"))
 
             # 1️⃣ CREATE USER (RETURNING id is REQUIRED for PostgreSQL)
