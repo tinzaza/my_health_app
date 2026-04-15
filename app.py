@@ -325,7 +325,9 @@ def init_db():
         ("anti_ige", "TEXT"),
         ("dupilumab", "TEXT"),
         ("benralizumab", "TEXT"),
-        ("patient_advice", "TEXT"),
+        ("patient_advice", "TEXT")
+        ("olopatadine_mometasone", "TEXT"),
+        ("mepolizumab", "TEXT"),
         ("next_visit", "TEXT"),
         ("doctor_notes_updated_at", "TIMESTAMP"),
     ]
@@ -552,7 +554,8 @@ def update_doctor_notes(symptom_id):
         "mometasone", "triamcinolone", "other_incs", "ephedrine", "oxymetazoline",
         "other_intranasal_decongestant", "azelastine", "levocabastin", "ketotifen",
         "prednisolone", "nasal_irrigation", "other_medications", "immunotherapy_inject",
-        "anti_ige", "dupilumab", "benralizumab", "patient_advice", "next_visit"
+        "anti_ige", "dupilumab", "benralizumab","olopatadine_mometasone","mepolizumab", 
+        "patient_advice", "next_visit"
     ]
 
     set_clause = ", ".join([f"{f} = %s" for f in fields])
@@ -1042,6 +1045,8 @@ def patient_detail(patient_id):
         "anti_ige": r.get("anti_ige"),
         "dupilumab": r.get("dupilumab"),
         "benralizumab": r.get("benralizumab"),
+        "olopatadine_mometasone": r.get("olopatadine_mometasone"),
+"mep    olizumab": r.get("mepolizumab"),
         "patient_advice": r.get("patient_advice"),
         "next_visit": r.get("next_visit"),
         "doctor_notes_updated_at": r.get("doctor_notes_updated_at"),

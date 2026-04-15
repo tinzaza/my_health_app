@@ -370,6 +370,7 @@
                                 <div class="col-6"><label class="form-label small">Fluticasone furoate</label><input name="fluticasone_furoate" class="form-control form-control-sm" value="{{ r.get('fluticasone_furoate') or '' }}"></div>
                                 <div class="col-6"><label class="form-label small">Mometasone furoate</label><input name="mometasone" class="form-control form-control-sm" value="{{ r.get('mometasone') or '' }}"></div>
                                 <div class="col-6"><label class="form-label small">Triamcinolone acetonide</label><input name="triamcinolone" class="form-control form-control-sm" value="{{ r.get('triamcinolone') or '' }}"></div>
+                                <div class="col-6"><label class="form-label small">Olopatadine / Mometasone furoate</label><input name="olopatadine_mometasone" class="form-control form-control-sm" value="{{ r.get('olopatadine_mometasone') or '' }}"></div>
                                 <div class="col-6"><label class="form-label small">Other</label><input name="other_incs" class="form-control form-control-sm" value="{{ r.get('other_incs') or '' }}"></div>
                             </div>
                             <h6 class="fw-semibold">Intranasal Decongestants</h6>
@@ -392,6 +393,12 @@
                                 <div class="col-6"><label class="form-label small">Immunotherapy</label><input name="immunotherapy_inject" class="form-control form-control-sm" value="{{ r.get('immunotherapy_inject') or '' }}"></div>
                                 <div class="col-6"><label class="form-label small">Anti-IgE antibody</label><input name="anti_ige" class="form-control form-control-sm" value="{{ r.get('anti_ige') or '' }}"></div>
                                 <div class="col-6"><label class="form-label small">Dupilumab</label><input name="dupilumab" class="form-control form-control-sm" value="{{ r.get('dupilumab') or '' }}"></div>
+                                <div class="col-6">
+                                <label class="form-label small">Mepolizumab</label>
+                                <input name="mepolizumab" 
+                                        class="form-control form-control-sm" 
+                                        value="{{ r.get('mepolizumab') or '' }}">
+                                </div>
                                 <div class="col-6"><label class="form-label small">Benralizumab</label><input name="benralizumab" class="form-control form-control-sm" value="{{ r.get('benralizumab') or '' }}"></div>
                             </div>
                             <h6 class="fw-semibold">Next Visit</h6>
